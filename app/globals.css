@@ -1,0 +1,45 @@
+@import 'tailwindcss';
+
+:root {
+  --background: oklch(0.105 0.025 270);
+  --foreground: oklch(0.97 0.015 250);
+  --card: oklch(0.16 0.035 268 / 78%);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.15 0.035 268);
+  --popover-foreground: var(--foreground);
+  --primary: oklch(0.78 0.17 193);
+  --primary-foreground: oklch(0.12 0.025 260);
+  --secondary: oklch(0.22 0.04 267);
+  --secondary-foreground: var(--foreground);
+  --muted: oklch(0.2 0.03 267);
+  --muted-foreground: oklch(0.7 0.04 260);
+  --accent: oklch(0.7 0.19 300);
+  --accent-foreground: var(--foreground);
+  --destructive: oklch(0.66 0.23 25);
+  --border: oklch(0.76 0.12 220 / 18%);
+  --input: oklch(0.76 0.12 220 / 22%);
+  --ring: oklch(0.78 0.17 193);
+  --radius: 0.85rem;
+}
+
+* { box-sizing: border-box; border-color: var(--border); }
+html, body { min-height: 100%; }
+body {
+  margin: 0;
+  color: var(--foreground);
+  background:
+    radial-gradient(circle at 52% 38%, oklch(0.24 0.09 265 / 48%), transparent 36rem),
+    linear-gradient(145deg, oklch(0.12 0.04 280), var(--background) 55%, oklch(0.09 0.025 235));
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+}
+button { font: inherit; }
+::selection { background: oklch(0.78 0.17 193 / 35%); }
+
+@keyframes float-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; }
+}
