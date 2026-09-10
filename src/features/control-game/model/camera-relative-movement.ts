@@ -10,13 +10,17 @@ export interface MovementBasis {
   readonly right: GridDirection;
 }
 
-export function getSnappedMovementBasis(cameraX: number, cameraZ: number): MovementBasis {
+export function getSnappedMovementBasis(
+  cameraX: number,
+  cameraZ: number,
+): MovementBasis {
   const forwardX = -cameraX;
   const forwardZ = -cameraZ;
 
-  const forward: GridDirection = Math.abs(forwardX) > Math.abs(forwardZ)
-    ? { dx: forwardX >= 0 ? 1 : -1, dz: 0 }
-    : { dx: 0, dz: forwardZ >= 0 ? 1 : -1 };
+  const forward: GridDirection =
+    Math.abs(forwardX) > Math.abs(forwardZ)
+      ? { dx: forwardX >= 0 ? 1 : -1, dz: 0 }
+      : { dx: 0, dz: forwardZ >= 0 ? 1 : -1 };
 
   return {
     forward,
@@ -24,9 +28,19 @@ export function getSnappedMovementBasis(cameraX: number, cameraZ: number): Movem
   };
 }
 
-export function directionForIntent(intent: MoveIntent, basis: MovementBasis): GridDirection {
+export function directionForIntent(
+  intent: MoveIntent,
+  basis: MovementBasis,
+): GridDirection {
   if (intent === 'forward') return basis.forward;
-  if (intent === 'backward') return { dx: -basis.forward.dx as -1 | 0 | 1, dz: -basis.forward.dz as -1 | 0 | 1 };
+  if (intent === 'backward')
+    return {
+      dx: -basis.forward.dx as -1 | 0 | 1,
+      dz: -basis.forward.dz as -1 | 0 | 1,
+    };
   if (intent === 'right') return basis.right;
-  return { dx: -basis.right.dx as -1 | 0 | 1, dz: -basis.right.dz as -1 | 0 | 1 };
+  return {
+    dx: -basis.right.dx as -1 | 0 | 1,
+    dz: -basis.right.dz as -1 | 0 | 1,
+  };
 }

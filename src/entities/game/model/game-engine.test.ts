@@ -3,13 +3,17 @@ import { GameEngine } from './game-engine';
 
 describe('GameEngine', () => {
   it('creates deterministic piece queues for the same seed', () => {
-    expect(new GameEngine(42).snapshot().next).toEqual(new GameEngine(42).snapshot().next);
+    expect(new GameEngine(42).snapshot().next).toEqual(
+      new GameEngine(42).snapshot().next,
+    );
   });
 
   it('keeps active cells inside the cubic board', () => {
     const game = new GameEngine(7);
     for (let index = 0; index < 20; index += 1) game.move(-1, 0);
-    expect(game.snapshot().active.every((cell) => cell.x >= 0 && cell.x < 8)).toBe(true);
+    expect(
+      game.snapshot().active.every((cell) => cell.x >= 0 && cell.x < 8),
+    ).toBe(true);
   });
 
   it('hard drop locks exactly four voxels', () => {

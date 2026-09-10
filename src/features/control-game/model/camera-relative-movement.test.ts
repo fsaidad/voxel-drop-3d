@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { directionForIntent, getSnappedMovementBasis } from './camera-relative-movement';
+import {
+  directionForIntent,
+  getSnappedMovementBasis,
+} from './camera-relative-movement';
 
 describe('camera-relative movement', () => {
   it('maps screen directions from the default front camera', () => {
@@ -16,7 +19,8 @@ describe('camera-relative movement', () => {
 
   it('always returns perpendicular cardinal directions', () => {
     const basis = getSnappedMovementBasis(3, -9);
-    const dot = basis.forward.dx * basis.right.dx + basis.forward.dz * basis.right.dz;
+    const dot =
+      basis.forward.dx * basis.right.dx + basis.forward.dz * basis.right.dz;
     expect(dot).toBe(0);
   });
 });

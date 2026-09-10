@@ -2,7 +2,12 @@
 
 import { create } from 'zustand';
 import { GameEngine, type Axis, type GameSnapshot } from '@/src/entities/game';
-import { directionForIntent, getSnappedMovementBasis, type MoveIntent, type MovementBasis } from './camera-relative-movement';
+import {
+  directionForIntent,
+  getSnappedMovementBasis,
+  type MoveIntent,
+  type MovementBasis,
+} from './camera-relative-movement';
 
 interface GameStore {
   readonly snapshot: GameSnapshot;
@@ -31,13 +36,32 @@ export const useGameStore = create<GameStore>((set, get) => {
     setCameraOrientation: (cameraX, cameraZ) => {
       const next = getSnappedMovementBasis(cameraX, cameraZ);
       const current = get().movementBasis;
-      if (next.forward.dx !== current.forward.dx || next.forward.dz !== current.forward.dz) set({ movementBasis: next });
+      if (
+        next.forward.dx !== current.forward.dx ||
+        next.forward.dz !== current.forward.dz
+      )
+        set({ movementBasis: next });
     },
-    rotate: (axis, direction = 1) => { if (engine.rotate(axis, direction)) publish(); },
-    drop: () => { if (engine.hardDrop()) publish(); },
-    tick: () => { if (engine.step()) publish(); },
-    togglePause: () => { engine.togglePause(); publish(); },
-    pause: () => { engine.pause(); publish(); },
-    restart: () => { engine = new GameEngine((Date.now() ^ 0x9e3779b9) >>> 0); publish(); },
+    rotate: (axis, direction = 1) => {
+      if (engine.rotate(axis, direction)) publish();
+    },
+    drop: () => {
+      if (engine.hardDrop()) publish();
+    },
+    tick: () => {
+      if (engine.step()) publish();
+    },
+    togglePause: () => {
+      engine.togglePause();
+      publish();
+    },
+    pause: () => {
+      engine.pause();
+      publish();
+    },
+    restart: () => {
+      engine = new GameEngine((Date.now() ^ 0x9e3779b9) >>> 0);
+      publish();
+    },
   };
 });
