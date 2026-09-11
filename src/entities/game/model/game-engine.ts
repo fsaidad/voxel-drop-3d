@@ -3,6 +3,7 @@ import {
   BOARD_SIZE,
   type ActivePiece,
   type Axis,
+  type GameMode,
   type GameSnapshot,
   type PieceKind,
   type RenderCell,
@@ -56,14 +57,21 @@ export class GameEngine {
   private readonly board = new Uint8Array(BOARD_SIZE ** 3);
   private readonly queue: PieceQueue;
   private active: ActivePiece | null = null;
-  private status: GameSnapshot['status'] = 'running';
+  private status: GameSnapshot['status'] = 'ready';
   private score = 0;
   private layers = 0;
   private tickCount = 0;
 
-  constructor(seed: number) {
+  constructor(
+    seed: number,
+    private readonly mode: GameMode = 'focus',
+  ) {
     this.queue = new PieceQueue(new SeededRandom(seed));
     this.spawn();
+  }
+
+  start(): void {
+    if (this.status === 'ready') this.status = 'running';
   }
 
   move(dx: number, dz: number): boolean {
@@ -116,10 +124,28 @@ export class GameEngine {
     return true;
   }
 
+  softDrop(): boolean {
+    if (this.status !== 'running' || !this.active) return false;
+    const candidate = {
+      ...this.active,
+      origin: { ...this.active.origin, y: this.active.origin.y - 1 },
+    };
+    if (this.canPlace(candidate)) {
+      this.active = candidate;
+      this.score += 1;
+    } else {
+      this.lock();
+    }
+    return true;
+  }
+
   step(): boolean {
     if (this.status !== 'running' || !this.active) return false;
     this.tickCount += 1;
-    const gravityEvery = Math.max(4, 14 - (this.level - 1));
+    const gravityEvery =
+      this.mode === 'focus'
+        ? Math.max(6, 18 - (this.level - 1))
+        : Math.max(3, 12 - (this.level - 1));
     if (this.tickCount % gravityEvery !== 0) return false;
     const candidate = {
       ...this.active,
@@ -131,7 +157,7 @@ export class GameEngine {
   }
 
   togglePause(): void {
-    if (this.status === 'game-over') return;
+    if (this.status !== 'running' && this.status !== 'paused') return;
     this.status = this.status === 'paused' ? 'running' : 'paused';
   }
 
@@ -146,24 +172,26 @@ export class GameEngine {
           color: this.active?.color ?? 1,
         }))
       : [];
-    const ghost = this.active
-      ? this.worldCells({
-          ...this.active,
-          origin: {
-            ...this.active.origin,
-            y: this.active.origin.y - this.dropDistance(),
-          },
-        }).map((cell) => ({ ...cell, color: this.active?.color ?? 1 }))
-      : [];
+    const ghost =
+      this.active && this.mode === 'focus'
+        ? this.worldCells({
+            ...this.active,
+            origin: {
+              ...this.active.origin,
+              y: this.active.origin.y - this.dropDistance(),
+            },
+          }).map((cell) => ({ ...cell, color: this.active?.color ?? 1 }))
+        : [];
     return {
       board: this.board.slice(),
       active,
       ghost,
-      next: this.queue.peek(3),
+      next: this.queue.peek(this.mode === 'focus' ? 3 : 1),
       score: this.score,
       level: this.level,
       layers: this.layers,
       status: this.status,
+      mode: this.mode,
       tick: this.tickCount,
     };
   }

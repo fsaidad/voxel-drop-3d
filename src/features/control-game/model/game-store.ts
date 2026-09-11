@@ -1,7 +1,12 @@
 'use client';
 
 import { create } from 'zustand';
-import { GameEngine, type Axis, type GameSnapshot } from '@/src/entities/game';
+import {
+  GameEngine,
+  type Axis,
+  type GameMode,
+  type GameSnapshot,
+} from '@/src/entities/game';
 import {
   directionForIntent,
   getSnappedMovementBasis,
@@ -16,9 +21,11 @@ interface GameStore {
   readonly setCameraOrientation: (cameraX: number, cameraZ: number) => void;
   readonly rotate: (axis: Axis, direction?: 1 | -1) => void;
   readonly drop: () => void;
+  readonly softDrop: () => void;
   readonly tick: () => void;
   readonly togglePause: () => void;
   readonly pause: () => void;
+  readonly start: (mode: GameMode) => void;
   readonly restart: () => void;
 }
 
@@ -48,6 +55,9 @@ export const useGameStore = create<GameStore>((set, get) => {
     drop: () => {
       if (engine.hardDrop()) publish();
     },
+    softDrop: () => {
+      if (engine.softDrop()) publish();
+    },
     tick: () => {
       if (engine.step()) publish();
     },
@@ -59,8 +69,15 @@ export const useGameStore = create<GameStore>((set, get) => {
       engine.pause();
       publish();
     },
+    start: (mode) => {
+      engine = new GameEngine((Date.now() ^ 0x9e3779b9) >>> 0, mode);
+      engine.start();
+      publish();
+    },
     restart: () => {
-      engine = new GameEngine((Date.now() ^ 0x9e3779b9) >>> 0);
+      const mode = engine.snapshot().mode;
+      engine = new GameEngine((Date.now() ^ 0x9e3779b9) >>> 0, mode);
+      engine.start();
       publish();
     },
   };

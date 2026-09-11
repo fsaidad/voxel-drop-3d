@@ -26,6 +26,7 @@ export function useGameController(): void {
   const moveRelative = useGameStore((state) => state.moveRelative);
   const rotate = useGameStore((state) => state.rotate);
   const drop = useGameStore((state) => state.drop);
+  const softDrop = useGameStore((state) => state.softDrop);
   const togglePause = useGameStore((state) => state.togglePause);
   const pause = useGameStore((state) => state.pause);
   const restart = useGameStore((state) => state.restart);
@@ -39,7 +40,9 @@ export function useGameController(): void {
     const onKeyDown = (event: KeyboardEvent) => {
       if (
         event.repeat &&
-        !['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(event.code)
+        !['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ShiftLeft', 'ShiftRight'].includes(
+          event.code,
+        )
       )
         return;
       const actions: Partial<Record<string, () => void>> = {
@@ -54,6 +57,8 @@ export function useGameController(): void {
         KeyQ: () => rotate('y', -1),
         KeyE: () => rotate('y', 1),
         Space: drop,
+        ShiftLeft: softDrop,
+        ShiftRight: softDrop,
         KeyP: togglePause,
         Escape: togglePause,
       };
@@ -65,7 +70,7 @@ export function useGameController(): void {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [drop, moveRelative, rotate, togglePause]);
+  }, [drop, moveRelative, rotate, softDrop, togglePause]);
 
   useEffect(() => {
     const onVisibility = () => {

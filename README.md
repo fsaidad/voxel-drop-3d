@@ -24,12 +24,20 @@ The game engine is deterministic for a supplied seed and has no dependency on Re
 - `W A S D`: move across the X/Z plane
 - `Q E`: rotate around Y
 - arrow keys: rotate around X/Z
+- `Shift`: soft drop by one voxel
 - `Space`: hard drop
 - `P` or `Esc`: pause
 - mouse/touch drag: orbit camera
 - wheel/pinch: zoom
 
 Mobile controls are displayed automatically on narrow screens.
+
+## Game modes
+
+- **Focus**: slower gravity, three-piece preview, and a landing projection.
+- **Hardcore**: faster gravity, one-piece preview, and no landing assistance.
+
+The simulation waits on the start screen, so the player can choose a camera angle and mode before gravity begins.
 
 ## Production baseline
 

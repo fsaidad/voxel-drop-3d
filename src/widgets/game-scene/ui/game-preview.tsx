@@ -8,6 +8,9 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUp,
+  ChevronsDown,
+  Crosshair,
+  Flame,
   Pause,
   Play,
   Rotate3D,
@@ -15,7 +18,11 @@ import {
 } from 'lucide-react';
 import { Color, InstancedMesh, Object3D } from 'three';
 import { Button } from '@/components/ui/button';
-import { BOARD_SIZE, type RenderCell } from '@/src/entities/game';
+import {
+  BOARD_SIZE,
+  type GameMode,
+  type RenderCell,
+} from '@/src/entities/game';
 import { useGameController, useGameStore } from '@/src/features/control-game';
 
 const COLORS = [
@@ -218,8 +225,10 @@ export function GamePreview() {
   const moveRelative = useGameStore((state) => state.moveRelative);
   const rotate = useGameStore((state) => state.rotate);
   const drop = useGameStore((state) => state.drop);
+  const softDrop = useGameStore((state) => state.softDrop);
   const togglePause = useGameStore((state) => state.togglePause);
   const restart = useGameStore((state) => state.restart);
+  const start = useGameStore((state) => state.start);
 
   return (
     <main className="h-dvh overflow-hidden p-0 sm:p-4 lg:p-6">
@@ -232,8 +241,10 @@ export function GamePreview() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="font-semibold tracking-tight">Voxel Drop</h1>
-                <span className="hidden rounded-full border border-emerald-300/15 bg-emerald-300/8 px-2 py-0.5 text-[9px] uppercase tracking-[.16em] text-emerald-200 sm:inline">
-                  Live
+                <span
+                  className={`hidden rounded-full border px-2 py-0.5 text-[9px] uppercase tracking-[.16em] sm:inline ${snapshot.mode === 'hardcore' ? 'border-rose-300/20 bg-rose-300/8 text-rose-200' : 'border-cyan-300/20 bg-cyan-300/8 text-cyan-200'}`}
+                >
+                  {snapshot.status === 'ready' ? 'Ready' : snapshot.mode}
                 </span>
               </div>
               <p className="text-xs text-slate-400">
@@ -256,6 +267,7 @@ export function GamePreview() {
               className="border-white/10 bg-white/[.025]"
               aria-label="Начать заново"
               onClick={restart}
+              disabled={snapshot.status === 'ready'}
             >
               <RotateCcw />
             </Button>
@@ -265,6 +277,7 @@ export function GamePreview() {
               className="border-white/10 bg-white/[.025]"
               aria-label={snapshot.status === 'paused' ? 'Продолжить' : 'Пауза'}
               onClick={togglePause}
+              disabled={snapshot.status === 'ready'}
             >
               {snapshot.status === 'paused' ? <Play /> : <Pause />}
             </Button>
@@ -302,6 +315,11 @@ export function GamePreview() {
               Движение следует за камерой. Поверните арену — направления
               перестроятся автоматически.
             </p>
+            <div className="mt-6 grid gap-2 text-xs text-slate-500">
+              <Hint keys="W A S D" label="движение" />
+              <Hint keys="Shift" label="на клетку ниже" />
+              <Hint keys="Space" label="бросить" />
+            </div>
           </aside>
 
           <div className="relative min-h-0 overflow-hidden bg-[#050711]">
@@ -345,8 +363,9 @@ export function GamePreview() {
                 label="Счёт"
                 value={snapshot.score.toLocaleString('ru-RU')}
               />
-              <div className="rounded-full border border-cyan-200/10 bg-slate-950/45 px-3 py-1.5 text-[9px] uppercase tracking-[.16em] text-cyan-200/70 backdrop-blur-md">
-                Камера управляет осями
+              <div className="rounded-full border border-violet-200/10 bg-slate-950/45 px-3 py-1.5 text-[9px] uppercase tracking-[.16em] text-violet-200/75 backdrop-blur-md">
+                Следующая ·{' '}
+                <strong className="text-violet-100">{snapshot.next[0]}</strong>
               </div>
               <Metric
                 label="Слои"
@@ -379,12 +398,22 @@ export function GamePreview() {
                   onClick={() => moveRelative('right')}
                 />
               </div>
-              <Button
-                className="h-12 rounded-xl px-4 shadow-[0_0_24px_rgba(57,221,255,.18)]"
-                onClick={drop}
-              >
-                Сброс
-              </Button>
+              <div className="grid gap-1">
+                <Button
+                  className="h-11 rounded-xl px-3 shadow-[0_0_24px_rgba(57,221,255,.18)]"
+                  onClick={drop}
+                >
+                  Бросить
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-9 rounded-xl border-white/10 bg-slate-950/68 px-3 text-[11px] backdrop-blur-xl"
+                  onClick={softDrop}
+                >
+                  <ChevronsDown />
+                  Ниже
+                </Button>
+              </div>
               <div className="grid grid-cols-2 gap-1 rounded-2xl border border-white/8 bg-slate-950/68 p-1.5 shadow-2xl backdrop-blur-xl">
                 <Control
                   icon={<Rotate3D />}
@@ -408,10 +437,14 @@ export function GamePreview() {
             <div className="pointer-events-none absolute inset-x-5 bottom-5 hidden flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[11px] text-slate-400 sm:flex lg:hidden">
               <Hint keys="W A S D" label="движение" />
               <Hint keys="Q E / ↕" label="поворот" />
-              <Hint keys="Space" label="сброс" />
+              <Hint keys="Shift" label="ниже" />
+              <Hint keys="Space" label="бросить" />
             </div>
 
-            {snapshot.status !== 'running' && (
+            {snapshot.status === 'ready' && <ReadyOverlay onStart={start} />}
+
+            {(snapshot.status === 'paused' ||
+              snapshot.status === 'game-over') && (
               <div className="absolute inset-0 z-40 grid place-items-center bg-slate-950/62 p-6 backdrop-blur-md">
                 <div className="w-full max-w-sm rounded-3xl border border-cyan-200/15 bg-slate-950/88 p-7 text-center shadow-[0_28px_90px_rgba(0,0,0,.55)]">
                   <p className="text-xs uppercase tracking-[.22em] text-cyan-300">
@@ -470,6 +503,73 @@ export function GamePreview() {
         </section>
       </div>
     </main>
+  );
+}
+
+function ReadyOverlay({
+  onStart,
+}: {
+  readonly onStart: (mode: GameMode) => void;
+}) {
+  return (
+    <div className="pointer-events-none absolute inset-0 z-40 grid place-items-center bg-slate-950/58 p-4 backdrop-blur-sm sm:p-6">
+      <div className="pointer-events-auto w-full max-w-xl rounded-[1.75rem] border border-cyan-200/15 bg-slate-950/90 p-5 shadow-[0_30px_100px_rgba(0,0,0,.65)] sm:p-7">
+        <div className="text-center">
+          <p className="text-[10px] uppercase tracking-[.24em] text-cyan-300">
+            Пространство готово
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
+            Выберите свой темп
+          </h2>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-400">
+            Сначала поверните куб и найдите удобный ракурс. Таймер начнётся
+            только после выбора режима.
+          </p>
+        </div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <button
+            type="button"
+            className="group rounded-2xl border border-cyan-300/25 bg-cyan-300/[.07] p-4 text-left transition hover:border-cyan-200/45 hover:bg-cyan-300/[.11] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/60"
+            onClick={() => onStart('focus')}
+          >
+            <span className="flex items-center justify-between">
+              <span className="grid size-9 place-items-center rounded-xl bg-cyan-300/12 text-cyan-200">
+                <Crosshair />
+              </span>
+              <span className="rounded-full bg-cyan-300/12 px-2 py-1 text-[9px] uppercase tracking-[.16em] text-cyan-200">
+                Рекомендуем
+              </span>
+            </span>
+            <strong className="mt-4 block text-lg">Focus</strong>
+            <span className="mt-1 block text-xs leading-5 text-slate-400">
+              Спокойнее падение, три следующие фигуры и проекция точки посадки.
+            </span>
+          </button>
+          <button
+            type="button"
+            className="group rounded-2xl border border-rose-300/15 bg-rose-300/[.035] p-4 text-left transition hover:border-rose-300/35 hover:bg-rose-300/[.07] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300/50"
+            onClick={() => onStart('hardcore')}
+          >
+            <span className="flex items-center justify-between">
+              <span className="grid size-9 place-items-center rounded-xl bg-rose-300/10 text-rose-200">
+                <Flame />
+              </span>
+              <span className="text-[9px] uppercase tracking-[.16em] text-rose-200/60">
+                Без страховки
+              </span>
+            </span>
+            <strong className="mt-4 block text-lg">Hardcore</strong>
+            <span className="mt-1 block text-xs leading-5 text-slate-400">
+              Быстрее гравитация, одна следующая фигура и никакой
+              ghost-проекции.
+            </span>
+          </button>
+        </div>
+        <p className="mt-4 text-center text-[11px] text-slate-500">
+          WASD — движение · мышь — камера · Space — бросить
+        </p>
+      </div>
+    </div>
   );
 }
 

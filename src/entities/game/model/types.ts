@@ -2,7 +2,8 @@ export const BOARD_SIZE = 8;
 
 export type Axis = 'x' | 'y' | 'z';
 export type PieceKind = 'I' | 'O' | 'T' | 'S' | 'Z' | 'J' | 'L';
-export type GameStatus = 'running' | 'paused' | 'game-over';
+export type GameMode = 'focus' | 'hardcore';
+export type GameStatus = 'ready' | 'running' | 'paused' | 'game-over';
 
 export interface Vec3i {
   readonly x: number;
@@ -30,5 +31,6 @@ export interface GameSnapshot {
   readonly level: number;
   readonly layers: number;
   readonly status: GameStatus;
+  readonly mode: GameMode;
   readonly tick: number;
 }
