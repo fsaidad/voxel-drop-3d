@@ -4,6 +4,7 @@ import {
   type ActivePiece,
   type Axis,
   type GameMode,
+  type GameFeedback,
   type GameSnapshot,
   type PieceKind,
   type RenderCell,
@@ -60,6 +61,9 @@ export class GameEngine {
   private status: GameSnapshot['status'] = 'ready';
   private score = 0;
   private layers = 0;
+  private pieces = 0;
+  private feedback: GameFeedback | null = null;
+  private feedbackId = 0;
   private tickCount = 0;
 
   constructor(
@@ -119,8 +123,7 @@ export class GameEngine {
       ...this.active,
       origin: { ...this.active.origin, y: this.active.origin.y - distance },
     };
-    this.score += distance * 2;
-    this.lock();
+    this.lock(distance * 2);
     return true;
   }
 
@@ -190,14 +193,25 @@ export class GameEngine {
       score: this.score,
       level: this.level,
       layers: this.layers,
+      pieces: this.pieces,
+      height: this.height,
       status: this.status,
       mode: this.mode,
+      feedback: this.feedback,
       tick: this.tickCount,
     };
   }
 
   get level(): number {
     return 1 + Math.floor(this.layers / 10);
+  }
+
+  get height(): number {
+    for (let y = BOARD_SIZE - 1; y >= 0; y -= 1)
+      for (let z = 0; z < BOARD_SIZE; z += 1)
+        for (let x = 0; x < BOARD_SIZE; x += 1)
+          if (this.board[this.index({ x, y, z })] !== 0) return y + 1;
+    return 0;
   }
 
   private spawn(): void {
@@ -220,17 +234,27 @@ export class GameEngine {
     this.active = candidate;
   }
 
-  private lock(): void {
+  private lock(dropPoints = 0): void {
     if (!this.active) return;
     for (const cell of this.worldCells(this.active))
       this.board[this.index(cell)] = this.active.color;
+    this.pieces += 1;
+    this.score += dropPoints;
     const cleared = this.clearLayers();
+    let clearPoints = 0;
     if (cleared > 0) {
       this.layers += cleared;
       const table = [0, 100, 300, 500, 800];
-      this.score +=
+      clearPoints =
         (table[Math.min(cleared, 4)] ?? 800 + (cleared - 4) * 400) * this.level;
+      this.score += clearPoints;
     }
+    this.feedback = {
+      id: (this.feedbackId += 1),
+      kind: cleared > 0 ? 'clear' : 'lock',
+      points: dropPoints + clearPoints,
+      clearedLayers: cleared,
+    };
     this.spawn();
   }
 

@@ -20,6 +20,7 @@ import { Color, InstancedMesh, Object3D } from 'three';
 import { Button } from '@/components/ui/button';
 import {
   BOARD_SIZE,
+  type GameFeedback as GameFeedbackData,
   type GameMode,
   type RenderCell,
 } from '@/src/entities/game';
@@ -310,6 +311,16 @@ export function GamePreview() {
                 />
               </div>
             </div>
+            <div className="mt-3 grid grid-cols-2 gap-3 rounded-2xl border border-white/8 bg-white/[.018] p-3">
+              <Metric
+                label="Фигуры"
+                value={String(snapshot.pieces).padStart(2, '0')}
+              />
+              <Metric
+                label="Высота"
+                value={`${snapshot.height}/${BOARD_SIZE}`}
+              />
+            </div>
             <div className="mt-8 h-px bg-gradient-to-r from-cyan-300/20 to-transparent" />
             <p className="mt-5 text-sm leading-6 text-slate-400">
               Движение следует за камерой. Поверните арену — направления
@@ -326,6 +337,7 @@ export function GamePreview() {
             <Canvas
               camera={{ position: [10.5, 9.5, 12.5], fov: 36 }}
               dpr={[1, 1.6]}
+              frameloop="demand"
               gl={{ antialias: true, powerPreference: 'high-performance' }}
             >
               <color attach="background" args={['#050711']} />
@@ -357,6 +369,19 @@ export function GamePreview() {
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_46%,transparent_28%,rgba(3,5,15,.38)_78%,rgba(2,3,10,.8)_100%)]" />
             <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#050711]/70 to-transparent" />
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#050711] via-[#050711]/75 to-transparent sm:h-24" />
+
+            {snapshot.feedback && (
+              <>
+                <div
+                  key={`pulse-${snapshot.feedback.id}`}
+                  className="placement-pulse pointer-events-none absolute inset-0"
+                />
+                <GameFeedback
+                  key={snapshot.feedback.id}
+                  feedback={snapshot.feedback}
+                />
+              </>
+            )}
 
             <div className="pointer-events-none absolute inset-x-4 top-4 flex items-start justify-between lg:hidden">
               <Metric
@@ -503,6 +528,20 @@ export function GamePreview() {
         </section>
       </div>
     </main>
+  );
+}
+
+function GameFeedback({ feedback }: { feedback: GameFeedbackData }) {
+  const isClear = feedback.kind === 'clear';
+  return (
+    <output
+      className={`game-feedback pointer-events-none absolute inset-x-0 top-16 z-20 mx-auto w-fit rounded-full border px-4 py-2 text-center text-xs font-medium shadow-2xl backdrop-blur-xl ${isClear ? 'border-amber-200/25 bg-amber-300/10 text-amber-100' : 'border-cyan-200/20 bg-slate-950/72 text-cyan-100'}`}
+      aria-live="polite"
+    >
+      {isClear
+        ? `${feedback.clearedLayers > 1 ? `${feedback.clearedLayers} слоя` : 'Слой'} очищен · +${feedback.points}`
+        : `Фигура установлена${feedback.points > 0 ? ` · +${feedback.points}` : ''}`}
+    </output>
   );
 }
 

@@ -4,6 +4,7 @@ export type Axis = 'x' | 'y' | 'z';
 export type PieceKind = 'I' | 'O' | 'T' | 'S' | 'Z' | 'J' | 'L';
 export type GameMode = 'focus' | 'hardcore';
 export type GameStatus = 'ready' | 'running' | 'paused' | 'game-over';
+export type GameFeedbackKind = 'lock' | 'clear';
 
 export interface Vec3i {
   readonly x: number;
@@ -13,6 +14,13 @@ export interface Vec3i {
 
 export interface RenderCell extends Vec3i {
   readonly color: number;
+}
+
+export interface GameFeedback {
+  readonly id: number;
+  readonly kind: GameFeedbackKind;
+  readonly points: number;
+  readonly clearedLayers: number;
 }
 
 export interface ActivePiece {
@@ -30,7 +38,10 @@ export interface GameSnapshot {
   readonly score: number;
   readonly level: number;
   readonly layers: number;
+  readonly pieces: number;
+  readonly height: number;
   readonly status: GameStatus;
   readonly mode: GameMode;
+  readonly feedback: GameFeedback | null;
   readonly tick: number;
 }

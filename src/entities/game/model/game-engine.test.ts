@@ -21,7 +21,11 @@ describe('GameEngine', () => {
     const game = new GameEngine(12);
     game.start();
     game.hardDrop();
-    expect([...game.snapshot().board].filter(Boolean)).toHaveLength(4);
+    const snapshot = game.snapshot();
+    expect([...snapshot.board].filter(Boolean)).toHaveLength(4);
+    expect(snapshot.pieces).toBe(1);
+    expect(snapshot.height).toBeGreaterThan(0);
+    expect(snapshot.feedback).toMatchObject({ id: 1, kind: 'lock' });
   });
 
   it('does not mutate internal state through snapshots', () => {

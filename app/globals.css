@@ -65,6 +65,44 @@ button {
   }
 }
 
+@keyframes game-feedback {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  14%,
+  68% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+}
+
+@keyframes placement-pulse {
+  from {
+    opacity: 0.42;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.game-feedback {
+  animation: game-feedback 1.35s ease-out both;
+}
+
+.placement-pulse {
+  background: radial-gradient(
+    circle at 50% 70%,
+    oklch(0.78 0.17 193 / 18%),
+    transparent 42%
+  );
+  animation: placement-pulse 0.55s ease-out both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
