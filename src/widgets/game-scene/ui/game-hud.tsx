@@ -11,7 +11,11 @@ import {
   Rotate3D,
   RotateCcw,
 } from 'lucide-react';
-import { BOARD_SIZE, type GameSnapshot } from '@/src/entities/game';
+import {
+  BOARD_SIZE,
+  type GameSnapshot,
+  type LayerPressure,
+} from '@/src/entities/game';
 import { useGameStore } from '@/src/features/control-game';
 import { Button } from '@/src/shared/ui';
 
@@ -166,6 +170,49 @@ export function MobileHud({ snapshot }: { readonly snapshot: GameSnapshot }) {
   );
 }
 
+export function DirectionCompass() {
+  const basis = useGameStore((state) => state.movementBasis);
+  const backward = { dx: -basis.forward.dx, dz: -basis.forward.dz };
+  const left = { dx: -basis.right.dx, dz: -basis.right.dz };
+  return (
+    <div
+      className="game-glass pointer-events-none absolute left-3 top-24 z-10 w-28 rounded-2xl border p-2.5 text-center shadow-lg backdrop-blur-md sm:left-4"
+      aria-label="Направления движения относительно камеры"
+    >
+      <p className="theme-subtle text-[8px] uppercase tracking-[.18em]">
+        Направления
+      </p>
+      <div className="mt-2 grid grid-cols-3 items-center gap-1 font-mono text-[9px]">
+        <span />
+        <CompassKey keyName="W" direction={axisLabel(basis.forward)} />
+        <span />
+        <CompassKey keyName="A" direction={axisLabel(left)} />
+        <span className="theme-cyan">●</span>
+        <CompassKey keyName="D" direction={axisLabel(basis.right)} />
+        <span />
+        <CompassKey keyName="S" direction={axisLabel(backward)} />
+        <span />
+      </div>
+    </div>
+  );
+}
+
+export function LayerPressureAlert({
+  pressure,
+}: {
+  readonly pressure: LayerPressure | null;
+}) {
+  if (!pressure || pressure.ratio < 0.72) return null;
+  return (
+    <output className="game-glass pointer-events-none absolute right-3 top-24 z-10 rounded-xl border border-amber-300/30 px-3 py-2 text-right text-[10px] text-amber-700 shadow-lg backdrop-blur-md dark:text-amber-100 sm:right-4">
+      <span className="block uppercase tracking-[.16em]">Почти заполнен</span>
+      <strong className="mt-0.5 block font-mono">
+        Слой {pressure.layer + 1} · {Math.round(pressure.ratio * 100)}%
+      </strong>
+    </output>
+  );
+}
+
 export function MobileControls({ disabled }: { readonly disabled: boolean }) {
   const moveRelative = useGameStore((state) => state.moveRelative);
   const rotate = useGameStore((state) => state.rotate);
@@ -317,4 +364,26 @@ function Control({
       {icon}
     </Button>
   );
+}
+
+function CompassKey({
+  keyName,
+  direction,
+}: {
+  keyName: string;
+  direction: string;
+}) {
+  return (
+    <span className="game-stat rounded-md border px-1 py-1 leading-tight">
+      <strong className="theme-cyan block">{keyName}</strong>
+      <small className="theme-subtle text-[7px]">{direction}</small>
+    </span>
+  );
+}
+
+function axisLabel(direction: { readonly dx: number; readonly dz: number }) {
+  if (direction.dx > 0) return '+X';
+  if (direction.dx < 0) return '−X';
+  if (direction.dz > 0) return '+Z';
+  return '−Z';
 }

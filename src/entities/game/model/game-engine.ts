@@ -6,10 +6,26 @@ import {
   type GameMode,
   type GameFeedback,
   type GameSnapshot,
+  type LayerPressure,
   type PieceKind,
   type RenderCell,
   type Vec3i,
 } from './types';
+
+export const GAME_RULES = {
+  focus: {
+    gravityStartTicks: 21,
+    minimumGravityTicks: 7,
+    lockDelayTicks: 12,
+    lockResetLimit: 10,
+  },
+  hardcore: {
+    gravityStartTicks: 14,
+    minimumGravityTicks: 4,
+    lockDelayTicks: 7,
+    lockResetLimit: 5,
+  },
+} as const;
 
 const KICKS: readonly Vec3i[] = [
   { x: 0, y: 0, z: 0 },
@@ -65,6 +81,8 @@ export class GameEngine {
   private feedback: GameFeedback | null = null;
   private feedbackId = 0;
   private tickCount = 0;
+  private groundedTicks = 0;
+  private lockResets = 0;
 
   constructor(
     seed: number,
@@ -88,6 +106,7 @@ export class GameEngine {
 
   move(dx: number, dz: number): boolean {
     if (this.status !== 'running' || !this.active) return false;
+    const wasGrounded = this.isGrounded();
     const candidate = {
       ...this.active,
       origin: {
@@ -98,11 +117,13 @@ export class GameEngine {
     };
     if (!this.canPlace(candidate)) return false;
     this.active = candidate;
+    this.resetLockDelay(wasGrounded || this.isGrounded());
     return true;
   }
 
   rotate(axis: Axis, direction: 1 | -1): boolean {
     if (this.status !== 'running' || !this.active) return false;
+    const wasGrounded = this.isGrounded();
     const rotated = this.active.cells.map((cell) =>
       rotateCell(cell, axis, direction),
     );
@@ -118,6 +139,7 @@ export class GameEngine {
       };
       if (this.canPlace(candidate)) {
         this.active = candidate;
+        this.resetLockDelay(wasGrounded || this.isGrounded());
         return true;
       }
     }
@@ -143,20 +165,28 @@ export class GameEngine {
     };
     if (this.canPlace(candidate)) {
       this.active = candidate;
+      this.groundedTicks = 0;
       this.score += 1;
-    } else {
-      this.lock();
+      return true;
     }
-    return true;
+    return false;
   }
 
   step(): boolean {
     if (this.status !== 'running' || !this.active) return false;
     this.tickCount += 1;
-    const gravityEvery =
-      this.mode === 'focus'
-        ? Math.max(6, 18 - (this.level - 1))
-        : Math.max(3, 12 - (this.level - 1));
+    const rules = GAME_RULES[this.mode];
+    if (this.isGrounded()) {
+      this.groundedTicks += 1;
+      if (this.groundedTicks < rules.lockDelayTicks) return false;
+      this.lock();
+      return true;
+    }
+    this.groundedTicks = 0;
+    const gravityEvery = Math.max(
+      rules.minimumGravityTicks,
+      rules.gravityStartTicks - (this.level - 1),
+    );
     if (this.tickCount % gravityEvery !== 0) return false;
     const candidate = {
       ...this.active,
@@ -203,6 +233,8 @@ export class GameEngine {
       layers: this.layers,
       pieces: this.pieces,
       height: this.height,
+      grounded: this.isGrounded(),
+      layerPressure: this.layerPressure,
       status: this.status,
       mode: this.mode,
       feedback: this.feedback,
@@ -222,7 +254,33 @@ export class GameEngine {
     return 0;
   }
 
+  get layerPressure(): LayerPressure | null {
+    let bestLayer = 0;
+    let bestFilled = 0;
+    const capacity = BOARD_SIZE * BOARD_SIZE;
+    for (let y = 0; y < BOARD_SIZE; y += 1) {
+      let filled = 0;
+      for (let z = 0; z < BOARD_SIZE; z += 1)
+        for (let x = 0; x < BOARD_SIZE; x += 1)
+          filled += Number(this.board[this.index({ x, y, z })] !== 0);
+      if (filled > bestFilled) {
+        bestFilled = filled;
+        bestLayer = y;
+      }
+    }
+    return bestFilled === 0
+      ? null
+      : {
+          layer: bestLayer,
+          filled: bestFilled,
+          capacity,
+          ratio: bestFilled / capacity,
+        };
+  }
+
   private spawn(): void {
+    this.groundedTicks = 0;
+    this.lockResets = 0;
     const kind = this.queue.take();
     const candidate: ActivePiece = {
       kind,
@@ -306,6 +364,21 @@ export class GameEngine {
     )
       distance += 1;
     return distance;
+  }
+
+  private isGrounded(): boolean {
+    if (!this.active) return false;
+    return !this.canPlace({
+      ...this.active,
+      origin: { ...this.active.origin, y: this.active.origin.y - 1 },
+    });
+  }
+
+  private resetLockDelay(grounded: boolean): void {
+    if (!grounded || this.lockResets >= GAME_RULES[this.mode].lockResetLimit)
+      return;
+    this.groundedTicks = 0;
+    this.lockResets += 1;
   }
 
   private canPlace(piece: ActivePiece): boolean {

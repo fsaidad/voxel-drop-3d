@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BOARD_SIZE } from './types';
-import { GameEngine } from './game-engine';
+import { GAME_RULES, GameEngine } from './game-engine';
 
 describe('GameEngine', () => {
   it('creates deterministic piece queues for the same seed', () => {
@@ -66,6 +66,34 @@ describe('GameEngine', () => {
     expect(game.snapshot().score).toBe(1);
   });
 
+  it('keeps a grounded piece movable during the lock delay', () => {
+    const game = new GameEngine(12);
+    game.start();
+    while (game.softDrop()) continue;
+
+    for (let index = 1; index < GAME_RULES.focus.lockDelayTicks; index += 1)
+      game.step();
+    expect(game.snapshot().pieces).toBe(0);
+
+    game.step();
+    expect(game.snapshot().pieces).toBe(1);
+  });
+
+  it('resets the lock delay after a valid grounded move', () => {
+    const game = new GameEngine(12);
+    game.start();
+    while (game.softDrop()) continue;
+    for (let index = 0; index < 6; index += 1) game.step();
+
+    expect(game.move(1, 0)).toBe(true);
+    for (let index = 0; index < 6; index += 1) game.step();
+    expect(game.snapshot().pieces).toBe(0);
+
+    for (let index = 6; index < GAME_RULES.focus.lockDelayTicks; index += 1)
+      game.step();
+    expect(game.snapshot().pieces).toBe(1);
+  });
+
   it('removes landing assistance in hardcore mode', () => {
     const focus = new GameEngine(6, 'focus').snapshot();
     const hardcore = new GameEngine(6, 'hardcore').snapshot();
@@ -84,6 +112,11 @@ describe('GameEngine', () => {
     for (const cell of landingCells) board[cell.x + BOARD_SIZE * cell.z] = 0;
 
     const game = new GameEngine(seed, 'focus', board);
+    expect(game.snapshot().layerPressure).toMatchObject({
+      layer: 0,
+      filled: 60,
+      capacity: 64,
+    });
     game.start();
     game.hardDrop();
     const snapshot = game.snapshot();

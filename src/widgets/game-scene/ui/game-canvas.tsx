@@ -84,9 +84,11 @@ function VoxelInstances({ cells }: { readonly cells: readonly RenderCell[] }) {
 function ActiveVoxels({
   cells,
   edgeColor,
+  grounded,
 }: {
   readonly cells: readonly RenderCell[];
   readonly edgeColor: string;
+  readonly grounded: boolean;
 }) {
   return cells.map((cell, index) => {
     const color = COLORS[cell.color] ?? COLORS[1]!;
@@ -99,13 +101,13 @@ function ActiveVoxels({
         <meshPhysicalMaterial
           color={color}
           emissive={color}
-          emissiveIntensity={0.24}
+          emissiveIntensity={grounded ? 0.42 : 0.24}
           roughness={0.18}
           metalness={0.12}
           clearcoat={0.8}
           clearcoatRoughness={0.16}
         />
-        <Edges color={edgeColor} threshold={12} />
+        <Edges color={grounded ? '#ffd166' : edgeColor} threshold={12} />
       </mesh>
     );
   });
@@ -182,7 +184,26 @@ function GameCube({ colorScheme }: { readonly colorScheme: ColorScheme }) {
         position={[0, -BOARD_SIZE / 2, 0]}
       />
       <VoxelInstances cells={boardCells} />
-      <ActiveVoxels cells={snapshot.active} edgeColor={sceneTheme.voxelEdge} />
+      {snapshot.layerPressure && snapshot.layerPressure.ratio >= 0.72 && (
+        <mesh
+          position={[0, toScene(snapshot.layerPressure.layer) - 0.44, 0]}
+          renderOrder={2}
+        >
+          <boxGeometry args={[BOARD_SIZE - 0.12, 0.045, BOARD_SIZE - 0.12]} />
+          <meshBasicMaterial
+            color="#ffd166"
+            transparent
+            opacity={0.08 + snapshot.layerPressure.ratio * 0.12}
+            depthWrite={false}
+          />
+          <Edges color="#ffd166" threshold={15} />
+        </mesh>
+      )}
+      <ActiveVoxels
+        cells={snapshot.active}
+        edgeColor={sceneTheme.voxelEdge}
+        grounded={snapshot.grounded}
+      />
       <pointLight
         position={activeCenter}
         intensity={8}

@@ -50,6 +50,30 @@ export function useGameController(): void {
   }, [tick]);
 
   useEffect(() => {
+    const heldKeys = new Map<string, number>();
+    const clearHeldKey = (code: string) => {
+      const timer = heldKeys.get(code);
+      if (timer !== undefined) window.clearTimeout(timer);
+      heldKeys.delete(code);
+    };
+    const clearHeldKeys = () => {
+      for (const code of heldKeys.keys()) clearHeldKey(code);
+    };
+    const startRepeating = (
+      code: string,
+      action: () => void,
+      delay: number,
+      interval: number,
+    ) => {
+      if (heldKeys.has(code)) return;
+      action();
+      const repeat = () => {
+        action();
+        heldKeys.set(code, window.setTimeout(repeat, interval));
+      };
+      heldKeys.set(code, window.setTimeout(repeat, delay));
+    };
+
     const onKeyDown = (event: KeyboardEvent) => {
       const target = event.target;
       const isInteractive =
@@ -62,13 +86,6 @@ export function useGameController(): void {
         event.defaultPrevented ||
         isInteractive ||
         (status !== 'running' && status !== 'paused')
-      )
-        return;
-      if (
-        event.repeat &&
-        !['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ShiftLeft', 'ShiftRight'].includes(
-          event.code,
-        )
       )
         return;
       const actions: Partial<Record<string, () => void>> = {
@@ -91,11 +108,31 @@ export function useGameController(): void {
       const action = actions[event.code];
       if (action) {
         event.preventDefault();
-        action();
+        const isSoftDrop =
+          event.code === 'ShiftLeft' || event.code === 'ShiftRight';
+        const isMovement = ['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(
+          event.code,
+        );
+        if (status === 'running' && (isMovement || isSoftDrop))
+          startRepeating(
+            event.code,
+            action,
+            isSoftDrop ? 110 : 145,
+            isSoftDrop ? 42 : 62,
+          );
+        else if (!event.repeat) action();
       }
     };
+    const onKeyUp = (event: KeyboardEvent) => clearHeldKey(event.code);
     window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('blur', clearHeldKeys);
+    return () => {
+      clearHeldKeys();
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('blur', clearHeldKeys);
+    };
   }, [drop, moveRelative, rotate, softDrop, status, togglePause]);
 
   useEffect(() => {

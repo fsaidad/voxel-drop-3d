@@ -23,6 +23,13 @@ export interface GameFeedback {
   readonly clearedLayers: number;
 }
 
+export interface LayerPressure {
+  readonly layer: number;
+  readonly filled: number;
+  readonly capacity: number;
+  readonly ratio: number;
+}
+
 export interface ActivePiece {
   readonly kind: PieceKind;
   readonly origin: Vec3i;
@@ -40,6 +47,8 @@ export interface GameSnapshot {
   readonly layers: number;
   readonly pieces: number;
   readonly height: number;
+  readonly grounded: boolean;
+  readonly layerPressure: LayerPressure | null;
   readonly status: GameStatus;
   readonly mode: GameMode;
   readonly feedback: GameFeedback | null;

@@ -3,7 +3,9 @@
 import { lazy, Suspense } from 'react';
 import { useGameController, useGameStore } from '@/src/features/control-game';
 import {
+  DirectionCompass,
   GameHeader,
+  LayerPressureAlert,
   MobileControls,
   MobileHud,
   NextSidebar,
@@ -42,6 +44,8 @@ export function GamePreview() {
                 feedback={snapshot.feedback}
               />
             )}
+            <DirectionCompass />
+            <LayerPressureAlert pressure={snapshot.layerPressure} />
             <MobileHud snapshot={snapshot} />
             <MobileControls disabled={snapshot.status !== 'running'} />
             <TabletHints />

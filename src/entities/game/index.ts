@@ -1,4 +1,4 @@
-export { GameEngine } from './model/game-engine';
+export { GAME_RULES, GameEngine } from './model/game-engine';
 export { BOARD_SIZE } from './model/types';
 export type {
   Axis,
@@ -7,6 +7,7 @@ export type {
   GameMode,
   GameSnapshot,
   GameStatus,
+  LayerPressure,
   PieceKind,
   RenderCell,
   Vec3i,

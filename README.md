@@ -31,6 +31,9 @@ The game engine is deterministic for a supplied seed and has no dependency on Re
 - wheel/pinch: zoom
 
 Mobile controls are displayed automatically on narrow screens.
+Movement and soft drop use a consistent delayed auto-repeat, so held controls
+feel the same across operating systems. The on-stage compass shows how WASD map
+to the world axes after every camera turn.
 
 ## Game modes
 
@@ -39,6 +42,9 @@ Mobile controls are displayed automatically on narrow screens.
 
 The simulation waits on the start screen, so the player can choose a camera angle and mode before gravity begins.
 Placement feedback, earned-point callouts, piece count, and stack height keep the state of the 3D board readable without covering the playfield.
+Grounded pieces remain movable for a short lock delay; a warm edge indicates
+the landing state. Layers above 72% occupancy receive an amber guide and a
+compact completion warning.
 
 ## Appearance
 
