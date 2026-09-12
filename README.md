@@ -40,6 +40,10 @@ Mobile controls are displayed automatically on narrow screens.
 The simulation waits on the start screen, so the player can choose a camera angle and mode before gravity begins.
 Placement feedback, earned-point callouts, piece count, and stack height keep the state of the 3D board readable without covering the playfield.
 
+## Appearance
+
+The interface and the WebGL scene automatically follow the device light or dark color scheme. Theme changes are applied live through `prefers-color-scheme`; no preference or tracking data is stored.
+
 ## Production baseline
 
 The repository contains only application code, tests, documentation, and CI configuration. Local environments, build output, hosting metadata, and generated files are ignored. Dependencies are pinned and every push is checked with linting, type checking, tests, and a production build.
