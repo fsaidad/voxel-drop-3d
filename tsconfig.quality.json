@@ -5,8 +5,6 @@
     "app/**/*.tsx",
     "src/**/*.ts",
     "src/**/*.tsx",
-    "components/ui/button.tsx",
-    "lib/utils.ts",
     "next-env.d.ts"
   ],
   "exclude": ["node_modules", "dist"]

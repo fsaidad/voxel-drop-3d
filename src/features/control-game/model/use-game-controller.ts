@@ -22,6 +22,7 @@ declare global {
 }
 
 export function useGameController(): void {
+  const status = useGameStore((state) => state.snapshot.status);
   const tick = useGameStore((state) => state.tick);
   const moveRelative = useGameStore((state) => state.moveRelative);
   const rotate = useGameStore((state) => state.rotate);
@@ -32,12 +33,37 @@ export function useGameController(): void {
   const restart = useGameStore((state) => state.restart);
 
   useEffect(() => {
-    const timer = window.setInterval(tick, 50);
-    return () => window.clearInterval(timer);
+    let frame = 0;
+    let previous = performance.now();
+    let accumulator = 0;
+    const runFrame = (now: number) => {
+      accumulator += Math.min(now - previous, 250);
+      previous = now;
+      while (accumulator >= 50) {
+        tick();
+        accumulator -= 50;
+      }
+      frame = window.requestAnimationFrame(runFrame);
+    };
+    frame = window.requestAnimationFrame(runFrame);
+    return () => window.cancelAnimationFrame(frame);
   }, [tick]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target;
+      const isInteractive =
+        target instanceof HTMLElement &&
+        (target.isContentEditable ||
+          target.matches(
+            'button, input, textarea, select, a[href], [role="button"]',
+          ));
+      if (
+        event.defaultPrevented ||
+        isInteractive ||
+        (status !== 'running' && status !== 'paused')
+      )
+        return;
       if (
         event.repeat &&
         !['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ShiftLeft', 'ShiftRight'].includes(
@@ -70,7 +96,7 @@ export function useGameController(): void {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [drop, moveRelative, rotate, softDrop, togglePause]);
+  }, [drop, moveRelative, rotate, softDrop, status, togglePause]);
 
   useEffect(() => {
     const onVisibility = () => {

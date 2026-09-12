@@ -69,7 +69,15 @@ export class GameEngine {
   constructor(
     seed: number,
     private readonly mode: GameMode = 'focus',
+    initialBoard?: Uint8Array,
   ) {
+    if (initialBoard) {
+      if (initialBoard.length !== this.board.length)
+        throw new RangeError(`Board must contain ${this.board.length} cells`);
+      if (initialBoard.some((cell) => cell > 7))
+        throw new RangeError('Board cells must use colors from 0 to 7');
+      this.board.set(initialBoard);
+    }
     this.queue = new PieceQueue(new SeededRandom(seed));
     this.spawn();
   }
@@ -236,6 +244,7 @@ export class GameEngine {
 
   private lock(dropPoints = 0): void {
     if (!this.active) return;
+    const levelAtLock = this.level;
     for (const cell of this.worldCells(this.active))
       this.board[this.index(cell)] = this.active.color;
     this.pieces += 1;
@@ -246,7 +255,8 @@ export class GameEngine {
       this.layers += cleared;
       const table = [0, 100, 300, 500, 800];
       clearPoints =
-        (table[Math.min(cleared, 4)] ?? 800 + (cleared - 4) * 400) * this.level;
+        (table[Math.min(cleared, 4)] ?? 800 + (cleared - 4) * 400) *
+        levelAtLock;
       this.score += clearPoints;
     }
     this.feedback = {
