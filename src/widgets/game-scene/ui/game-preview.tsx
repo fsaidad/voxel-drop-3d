@@ -53,7 +53,7 @@ export function GamePreview() {
 
   return (
     <main className="h-dvh overflow-hidden p-0 sm:p-4 lg:p-6">
-      <div className="game-shell mx-auto grid h-full max-w-[1600px] grid-rows-[auto_minmax(0,1fr)] overflow-hidden backdrop-blur-xl sm:rounded-[1.5rem] sm:border">
+      <div className="game-shell mx-auto grid h-full max-w-[1600px] grid-rows-[auto_minmax(0,1fr)] overflow-hidden sm:rounded-lg sm:border">
         <GameHeader snapshot={snapshot} onOpenProfile={openProfile} />
         <section className="grid min-h-0 lg:grid-cols-[210px_minmax(0,1fr)_210px]">
           <SessionSidebar snapshot={snapshot} />

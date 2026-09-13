@@ -26,7 +26,7 @@ export function ProfileOverlay({ onClose }: { readonly onClose: () => void }) {
   return (
     <dialog
       ref={dialog}
-      className="game-dialog game-modal m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-3xl overflow-y-auto rounded-3xl border p-0 text-inherit shadow-[0_32px_110px_rgba(0,0,0,.38)]"
+      className="game-dialog game-modal m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-3xl overflow-y-auto rounded-lg border p-0 text-inherit shadow-[0_24px_70px_rgba(0,0,0,.28)]"
       aria-labelledby="profile-title"
       onCancel={(event) => {
         event.preventDefault();
@@ -53,7 +53,7 @@ export function ProfileOverlay({ onClose }: { readonly onClose: () => void }) {
       </div>
 
       <div className="p-5 sm:p-7">
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="grid grid-cols-2 border sm:grid-cols-4">
           <ProfileMetric
             label="Рекорд"
             value={metrics.bestScore.toLocaleString('ru-RU')}
@@ -92,10 +92,10 @@ export function ProfileOverlay({ onClose }: { readonly onClose: () => void }) {
               return (
                 <article
                   key={achievement.id}
-                  className={`game-stat flex items-start gap-3 rounded-2xl border p-3 ${available ? '' : 'opacity-50'}`}
+                  className={`game-stat flex items-start gap-3 rounded-md border p-3 ${available ? '' : 'opacity-50'}`}
                 >
                   <span
-                    className={`grid size-9 shrink-0 place-items-center rounded-xl ${available ? 'bg-amber-300/12 text-amber-600 dark:text-amber-200' : 'bg-black/5 theme-subtle dark:bg-white/5'}`}
+                    className={`mt-0.5 shrink-0 ${available ? 'text-amber-600 dark:text-amber-200' : 'theme-subtle'}`}
                   >
                     {available ? <Trophy /> : <LockKeyhole />}
                   </span>
@@ -144,7 +144,7 @@ function SkinGrid() {
           <button
             key={skin.id}
             type="button"
-            className={`game-stat rounded-xl border p-2 text-left transition ${available ? 'hover:border-cyan-300/40' : 'cursor-not-allowed opacity-55'} ${selected === skin.id ? 'border-cyan-300/60 ring-1 ring-cyan-300/30' : ''}`}
+            className={`game-stat rounded-md border p-2 text-left transition ${available ? 'hover:border-cyan-300/40' : 'cursor-not-allowed opacity-55'} ${selected === skin.id ? 'border-cyan-300/60 ring-1 ring-cyan-300/30' : ''}`}
             disabled={!available}
             onClick={() => selectSkin(skin.id)}
           >
@@ -177,7 +177,7 @@ function ProfileMetric({
   readonly value: string;
 }) {
   return (
-    <div className="game-stat rounded-2xl border p-3">
+    <div className="border-r border-b p-3 last:border-r-0 sm:border-b-0">
       <span className="theme-subtle text-[9px] uppercase tracking-[.16em]">
         {label}
       </span>
@@ -202,7 +202,7 @@ export function AchievementToast() {
     (skin) => skin.unlockAchievement === achievement.id,
   );
   return (
-    <output className="game-dialog pointer-events-none absolute right-3 top-24 z-30 w-64 rounded-2xl border border-amber-300/30 p-3 shadow-2xl backdrop-blur-xl sm:right-4">
+    <output className="game-dialog pointer-events-none absolute right-3 top-24 z-30 w-64 rounded-md border border-amber-300/30 p-3 shadow-lg sm:right-4">
       <span className="flex items-center gap-2 text-xs font-semibold text-amber-700 dark:text-amber-100">
         <Trophy className="size-4" /> {achievement.title}
       </span>

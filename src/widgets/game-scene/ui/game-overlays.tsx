@@ -1,15 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import {
-  Crosshair,
-  Eye,
-  Flame,
-  GraduationCap,
-  House,
-  Play,
-  RotateCcw,
-} from 'lucide-react';
+import { Eye, GraduationCap, House, Play, RotateCcw } from 'lucide-react';
 import { getAchievement } from '@/src/entities/achievement';
 import type {
   GameFeedback as Feedback,
@@ -51,21 +43,19 @@ export function ReadyOverlay({
     <div className="game-overlay pointer-events-none absolute inset-0 z-40 grid place-items-center p-4 backdrop-blur-sm sm:p-6">
       <dialog
         open
-        className="game-dialog pointer-events-auto relative m-0 max-h-[calc(100dvh-6rem)] w-full max-w-xl overflow-y-auto overscroll-contain rounded-[1.75rem] border p-5 text-inherit shadow-[0_30px_100px_rgba(0,0,0,.32)] sm:p-7"
+        className="game-dialog pointer-events-auto relative m-0 max-h-[calc(100dvh-6rem)] w-full max-w-xl overflow-y-auto overscroll-contain rounded-lg border p-5 text-inherit shadow-[0_24px_70px_rgba(0,0,0,.24)] sm:p-7"
         aria-modal="false"
         aria-labelledby="ready-title"
       >
-        <div className="text-center">
-          <p className="theme-cyan text-[10px] uppercase tracking-[.24em]">
-            Пространство готово
-          </p>
+        <div>
+          <p className="theme-cyan font-mono text-[10px]">НОВАЯ ПАРТИЯ / 01</p>
           <h2
             id="ready-title"
             className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl"
           >
             Выберите свой темп
           </h2>
-          <p className="theme-muted mx-auto mt-2 max-w-md text-sm leading-6">
+          <p className="theme-muted mt-2 max-w-md text-sm leading-6">
             Сначала поверните куб и найдите удобный ракурс. Таймер начнётся
             только после выбора режима.
           </p>
@@ -74,16 +64,12 @@ export function ReadyOverlay({
           <ModeButton
             buttonRef={primaryAction}
             mode="focus"
-            icon={<Crosshair />}
-            badge="Рекомендуем"
             title="Focus"
             description="Спокойнее падение, три следующие фигуры и проекция точки посадки."
             onStart={onStart}
           />
           <ModeButton
             mode="hardcore"
-            icon={<Flame />}
-            badge="Без страховки"
             title="Hardcore"
             description="Быстрее гравитация, одна следующая фигура и никакой ghost-проекции."
             onStart={onStart}
@@ -106,16 +92,12 @@ export function ReadyOverlay({
 
 function ModeButton({
   mode,
-  icon,
-  badge,
   title,
   description,
   onStart,
   buttonRef,
 }: {
   mode: GameMode;
-  icon: React.ReactNode;
-  badge: string;
   title: string;
   description: string;
   onStart: (mode: GameMode) => void;
@@ -126,24 +108,24 @@ function ModeButton({
     <button
       ref={buttonRef}
       type="button"
-      className={`group rounded-2xl border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 ${focus ? 'border-cyan-300/25 bg-cyan-300/[.07] hover:border-cyan-200/45 hover:bg-cyan-300/[.11] focus-visible:ring-cyan-300/60' : 'border-rose-300/15 bg-rose-300/[.035] hover:border-rose-300/35 hover:bg-rose-300/[.07] focus-visible:ring-rose-300/50'}`}
+      className={`group rounded-md border border-l-2 p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 ${focus ? 'border-cyan-300/30 bg-cyan-300/[.045] hover:border-cyan-200/55 focus-visible:ring-cyan-300/60' : 'border-rose-300/20 bg-rose-300/[.025] hover:border-rose-300/45 focus-visible:ring-rose-300/50'}`}
       onClick={() => onStart(mode)}
     >
       <span className="flex items-center justify-between">
+        <strong className="text-lg">{title}</strong>
         <span
-          className={`${focus ? 'theme-cyan bg-cyan-300/12' : 'theme-rose bg-rose-300/10'} grid size-9 place-items-center rounded-xl`}
+          className={`${focus ? 'theme-cyan' : 'theme-rose'} font-mono text-[10px]`}
         >
-          {icon}
-        </span>
-        <span
-          className={`${focus ? 'theme-cyan bg-cyan-300/12' : 'theme-rose opacity-70'} rounded-full px-2 py-1 text-[9px] uppercase tracking-[.16em]`}
-        >
-          {badge}
+          {focus ? '01' : '02'} / {focus ? 'CALM' : 'FAST'}
         </span>
       </span>
-      <strong className="mt-4 block text-lg">{title}</strong>
       <span className="theme-muted mt-1 block text-xs leading-5">
         {description}
+      </span>
+      <span
+        className={`${focus ? 'theme-cyan' : 'theme-rose'} mt-3 block font-mono text-[9px]`}
+      >
+        {focus ? 'ПРОЕКЦИЯ · ОЧЕРЕДЬ ×3' : 'БЕЗ ПРОЕКЦИИ · ОЧЕРЕДЬ ×1'}
       </span>
     </button>
   );
@@ -187,10 +169,10 @@ export function StatusOverlay({
           </output>
         )}
         <section
-          className="game-dialog pointer-events-auto flex w-full max-w-lg items-center gap-3 rounded-2xl border p-3 pr-3 shadow-2xl backdrop-blur-xl sm:p-4"
+          className="game-dialog pointer-events-auto flex w-full max-w-lg items-center gap-3 rounded-md border p-3 pr-3 shadow-lg sm:p-4"
           aria-label="Игра на паузе"
         >
-          <span className="theme-cyan grid size-10 shrink-0 place-items-center rounded-xl bg-cyan-300/10">
+          <span className="theme-cyan shrink-0">
             <Eye />
           </span>
           <div className="min-w-0 flex-1">
@@ -222,7 +204,7 @@ export function StatusOverlay({
     <div className="game-overlay absolute inset-0 z-40 grid place-items-center p-6 backdrop-blur-md">
       <dialog
         ref={dialog}
-        className="game-dialog game-modal m-auto max-h-[calc(100dvh-6rem)] w-full max-w-sm overflow-y-auto rounded-3xl border p-7 text-center text-inherit shadow-[0_28px_90px_rgba(0,0,0,.3)]"
+        className="game-dialog game-modal m-auto max-h-[calc(100dvh-6rem)] w-full max-w-sm overflow-y-auto rounded-lg border p-7 text-center text-inherit shadow-[0_24px_70px_rgba(0,0,0,.24)]"
         aria-modal="true"
         aria-labelledby="status-title"
       >
@@ -241,7 +223,7 @@ export function StatusOverlay({
           </p>
         )}
         {sessionSummary && sessionSummary.unlockedAchievements.length > 0 && (
-          <div className="game-stat mt-4 rounded-2xl border p-3 text-left">
+          <div className="game-stat mt-4 rounded-md border p-3 text-left">
             <p className="theme-violet text-[9px] uppercase tracking-[.16em]">
               Получено за партию
             </p>
@@ -323,7 +305,7 @@ export function TutorialOverlay({
   const current = ['camera', 'move', 'yaw', 'tilt', 'drop'].indexOf(step);
   return (
     <aside className="pointer-events-none absolute inset-x-3 bottom-40 z-30 sm:inset-x-auto sm:bottom-5 sm:left-5 sm:w-80">
-      <div className="game-dialog rounded-2xl border p-4 shadow-2xl backdrop-blur-xl">
+      <div className="game-dialog rounded-md border p-4 shadow-lg">
         <div className="flex items-center justify-between gap-3">
           <span className="theme-cyan text-[9px] uppercase tracking-[.2em]">
             Обучение

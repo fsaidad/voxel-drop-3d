@@ -32,22 +32,19 @@ export function GameHeader({
   const canPause =
     snapshot.status === 'running' || snapshot.status === 'paused';
   return (
-    <header className="game-header relative z-30 flex items-center justify-between border-b px-4 py-3 backdrop-blur-xl sm:px-6">
-      <div className="flex items-center gap-3">
-        <span className="theme-cyan grid h-10 w-10 place-items-center rounded-xl border border-cyan-300/30 bg-gradient-to-br from-cyan-300/20 to-violet-400/10 font-mono text-sm font-bold shadow-[0_0_28px_rgba(57,221,255,.12)]">
-          VD
-        </span>
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="font-semibold tracking-tight">Voxel Drop</h1>
-            <span
-              className={`hidden rounded-full border px-2 py-0.5 text-[9px] uppercase tracking-[.16em] sm:inline ${snapshot.mode === 'hardcore' ? 'theme-rose border-rose-300/20 bg-rose-300/8' : 'theme-cyan border-cyan-300/20 bg-cyan-300/8'}`}
-            >
-              {snapshot.status === 'ready' ? 'Ready' : snapshot.mode}
-            </span>
-          </div>
-          <p className="theme-muted text-xs">Пространственная головоломка</p>
+    <header className="game-header relative z-30 flex items-center justify-between border-b px-4 py-3 sm:px-6">
+      <div>
+        <div className="flex items-baseline gap-3">
+          <h1 className="text-base font-bold tracking-[-0.035em]">
+            Voxel Drop
+          </h1>
+          <span
+            className={`hidden font-mono text-[10px] sm:inline ${snapshot.mode === 'hardcore' ? 'theme-rose' : 'theme-cyan'}`}
+          >
+            / {snapshot.status === 'ready' ? 'standby' : snapshot.mode}
+          </span>
         </div>
+        <p className="theme-muted text-xs">Тетрис в объёме 8 × 8 × 8</p>
       </div>
       <div className="flex items-center gap-2">
         <div className="mr-1 hidden text-right sm:block lg:hidden">
@@ -100,36 +97,38 @@ export function SessionSidebar({
 }) {
   return (
     <aside className="game-sidebar hidden border-r p-6 lg:block">
-      <p className="theme-cyan text-[10px] uppercase tracking-[.22em]">
-        Сессия
-      </p>
-      <div className="game-stat mt-5 rounded-2xl border p-4">
+      <p className="theme-cyan font-mono text-[10px]">01 / СЕССИЯ</p>
+      <div className="mt-5 border-y py-4">
         <Metric
           label="Счёт"
           value={snapshot.score.toLocaleString('ru-RU')}
           large
         />
       </div>
-      <div className="mt-3 grid grid-cols-2 gap-3">
-        <div className="game-stat rounded-2xl border p-3">
+      <div className="grid grid-cols-2 border-b">
+        <div className="border-r py-3 pr-3">
           <Metric
             label="Режим"
             value={snapshot.mode === 'focus' ? 'Focus' : 'Hard'}
           />
         </div>
-        <div className="game-stat rounded-2xl border p-3">
+        <div className="py-3 pl-3">
           <Metric
             label="Слои"
             value={String(snapshot.layers).padStart(2, '0')}
           />
         </div>
       </div>
-      <div className="game-stat mt-3 grid grid-cols-2 gap-3 rounded-2xl border p-3">
-        <Metric
-          label="Фигуры"
-          value={String(snapshot.pieces).padStart(2, '0')}
-        />
-        <Metric label="Высота" value={`${snapshot.height}/${BOARD_SIZE}`} />
+      <div className="grid grid-cols-2 border-b">
+        <div className="border-r py-3 pr-3">
+          <Metric
+            label="Фигуры"
+            value={String(snapshot.pieces).padStart(2, '0')}
+          />
+        </div>
+        <div className="py-3 pl-3">
+          <Metric label="Высота" value={`${snapshot.height}/${BOARD_SIZE}`} />
+        </div>
       </div>
       <div className="mt-8 h-px bg-gradient-to-r from-cyan-300/20 to-transparent" />
       <p className="theme-muted mt-5 text-sm leading-6">
@@ -148,14 +147,12 @@ export function SessionSidebar({
 export function NextSidebar({ snapshot }: { readonly snapshot: GameSnapshot }) {
   return (
     <aside className="game-sidebar hidden border-l p-6 lg:block">
-      <p className="theme-violet text-[10px] uppercase tracking-[.22em]">
-        Очередь фигур
-      </p>
-      <div className="mt-5 grid gap-2">
+      <p className="theme-violet font-mono text-[10px]">02 / ОЧЕРЕДЬ</p>
+      <div className="mt-5 border-y">
         {snapshot.next.map((piece, index) => (
           <div
             key={`${piece}-${index}`}
-            className={`game-stat grid place-items-center rounded-2xl border font-mono text-2xl ${index === 0 ? 'theme-violet h-24 border-violet-300/20 bg-violet-300/[.06] shadow-[inset_0_0_32px_rgba(168,85,247,.06)]' : 'theme-subtle h-16'}`}
+            className={`grid place-items-center border-b font-mono text-2xl last:border-b-0 ${index === 0 ? 'theme-violet h-24 bg-violet-300/[.045]' : 'theme-subtle h-16'}`}
           >
             {piece}
           </div>
@@ -173,8 +170,8 @@ export function MobileHud({ snapshot }: { readonly snapshot: GameSnapshot }) {
   return (
     <div className="pointer-events-none absolute inset-x-4 top-4 flex items-start justify-between lg:hidden">
       <Metric label="Счёт" value={snapshot.score.toLocaleString('ru-RU')} />
-      <div className="game-glass theme-violet rounded-full border px-3 py-1.5 text-[9px] uppercase tracking-[.16em] backdrop-blur-md">
-        Следующая · <strong>{snapshot.next[0]}</strong>
+      <div className="game-glass theme-violet border px-3 py-1.5 font-mono text-[9px]">
+        NEXT / <strong>{snapshot.next[0]}</strong>
       </div>
       <Metric label="Слои" value={String(snapshot.layers).padStart(2, '0')} />
     </div>
@@ -187,12 +184,10 @@ export function DirectionCompass() {
   const left = { dx: -basis.right.dx, dz: -basis.right.dz };
   return (
     <div
-      className="game-glass pointer-events-none absolute left-3 top-24 z-10 w-28 rounded-2xl border p-2.5 text-center shadow-lg backdrop-blur-md sm:left-4"
+      className="game-glass pointer-events-none absolute left-3 top-24 z-10 w-28 rounded-md border p-2.5 text-center sm:left-4"
       aria-label="Направления движения относительно камеры"
     >
-      <p className="theme-subtle text-[8px] uppercase tracking-[.18em]">
-        Направления
-      </p>
+      <p className="theme-subtle font-mono text-[8px]">КАМЕРА / ХОД</p>
       <div className="mt-2 grid grid-cols-3 items-center gap-1 font-mono text-[9px]">
         <span />
         <CompassKey keyName="W" direction={axisLabel(basis.forward)} />
@@ -234,7 +229,7 @@ export function MobileControls({ status }: { readonly status: GameStatus }) {
   const pauseDisabled = status !== 'running' && status !== 'paused';
   return (
     <div className="absolute inset-x-3 bottom-3 z-20 grid grid-cols-[1fr_auto_1fr] items-end gap-2 sm:hidden">
-      <div className="game-glass grid grid-cols-3 gap-1 rounded-2xl border p-1.5 shadow-2xl backdrop-blur-xl">
+      <div className="game-glass grid grid-cols-3 gap-1 rounded-md border p-1.5">
         <span />
         <Control
           icon={<ArrowUp />}
@@ -264,7 +259,7 @@ export function MobileControls({ status }: { readonly status: GameStatus }) {
       </div>
       <div className="grid gap-1">
         <Button
-          className="h-11 rounded-xl px-3 shadow-[0_0_24px_rgba(57,221,255,.18)]"
+          className="h-11 rounded-md px-3"
           onClick={drop}
           disabled={actionDisabled}
         >
@@ -272,14 +267,14 @@ export function MobileControls({ status }: { readonly status: GameStatus }) {
         </Button>
         <Button
           variant="outline"
-          className="game-glass h-9 rounded-xl px-3 text-[11px] backdrop-blur-xl"
+          className="game-glass h-9 rounded-md px-3 text-[11px]"
           onClick={softDrop}
           disabled={actionDisabled}
         >
           <ChevronsDown /> Ниже
         </Button>
       </div>
-      <div className="game-glass grid grid-cols-2 gap-1 rounded-2xl border p-1.5 shadow-2xl backdrop-blur-xl">
+      <div className="game-glass grid grid-cols-2 gap-1 rounded-md border p-1.5">
         <AxisControl
           axis="X"
           direction={-1}
@@ -352,9 +347,7 @@ function Metric({
 }) {
   return (
     <div>
-      <span className="theme-subtle block text-[11px] uppercase tracking-[.16em]">
-        {label}
-      </span>
+      <span className="theme-subtle block text-[11px]">{label}</span>
       <strong
         className={`mt-1 block font-mono tabular-nums ${large ? 'text-4xl' : 'text-xl'}`}
       >
