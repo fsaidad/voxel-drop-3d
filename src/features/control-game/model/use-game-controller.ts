@@ -29,6 +29,10 @@ export function useGameController(): void {
   const drop = useGameStore((state) => state.drop);
   const softDrop = useGameStore((state) => state.softDrop);
   const togglePause = useGameStore((state) => state.togglePause);
+  const resumeCountdown = useGameStore((state) => state.resumeCountdown);
+  const advanceResumeCountdown = useGameStore(
+    (state) => state.advanceResumeCountdown,
+  );
   const pause = useGameStore((state) => state.pause);
   const restart = useGameStore((state) => state.restart);
 
@@ -48,6 +52,12 @@ export function useGameController(): void {
     frame = window.requestAnimationFrame(runFrame);
     return () => window.cancelAnimationFrame(frame);
   }, [tick]);
+
+  useEffect(() => {
+    if (resumeCountdown === null) return;
+    const timer = window.setTimeout(advanceResumeCountdown, 1000);
+    return () => window.clearTimeout(timer);
+  }, [advanceResumeCountdown, resumeCountdown]);
 
   useEffect(() => {
     const heldKeys = new Map<string, number>();

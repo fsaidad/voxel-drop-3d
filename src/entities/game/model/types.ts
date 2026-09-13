@@ -43,7 +43,6 @@ export interface GameSnapshot {
   readonly ghost: readonly RenderCell[];
   readonly next: readonly PieceKind[];
   readonly score: number;
-  readonly level: number;
   readonly layers: number;
   readonly pieces: number;
   readonly height: number;

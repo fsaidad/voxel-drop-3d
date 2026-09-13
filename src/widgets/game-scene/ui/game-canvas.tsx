@@ -234,6 +234,9 @@ function CameraControls() {
   const setCameraOrientation = useGameStore(
     (state) => state.setCameraOrientation,
   );
+  const registerCameraInteraction = useGameStore(
+    (state) => state.registerCameraInteraction,
+  );
 
   useEffect(() => {
     setCameraOrientation(camera.position.x, camera.position.z);
@@ -248,6 +251,7 @@ function CameraControls() {
       minPolarAngle={0.25}
       maxPolarAngle={1.45}
       dampingFactor={0.08}
+      onStart={registerCameraInteraction}
       onChange={() =>
         setCameraOrientation(camera.position.x, camera.position.z)
       }

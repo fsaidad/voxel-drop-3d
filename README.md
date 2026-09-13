@@ -35,10 +35,17 @@ Movement and soft drop use a consistent delayed auto-repeat, so held controls
 feel the same across operating systems. The on-stage compass shows how WASD map
 to the world axes after every camera turn.
 
+Pause freezes the simulation but keeps orbit and zoom available for inspecting
+the board. Resuming uses a short countdown. A separate interactive tutorial
+teaches camera-relative movement, piece rotation, and placement without gravity
+or score pressure.
+
 ## Game modes
 
 - **Focus**: slower gravity, three-piece preview, and a landing projection.
 - **Hardcore**: faster gravity, one-piece preview, and no landing assistance.
+
+Both modes keep a stable pace throughout the session; there is no level system.
 
 The simulation waits on the start screen, so the player can choose a camera angle and mode before gravity begins.
 Placement feedback, earned-point callouts, piece count, and stack height keep the state of the 3D board readable without covering the playfield.

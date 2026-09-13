@@ -12,7 +12,12 @@ import {
   SessionSidebar,
   TabletHints,
 } from './game-hud';
-import { GameFeedback, ReadyOverlay, StatusOverlay } from './game-overlays';
+import {
+  GameFeedback,
+  ReadyOverlay,
+  StatusOverlay,
+  TutorialOverlay,
+} from './game-overlays';
 
 const GameCanvas = lazy(() =>
   import('./game-canvas').then((module) => ({ default: module.GameCanvas })),
@@ -21,7 +26,11 @@ const GameCanvas = lazy(() =>
 export function GamePreview() {
   useGameController();
   const snapshot = useGameStore((state) => state.snapshot);
+  const resumeCountdown = useGameStore((state) => state.resumeCountdown);
+  const tutorialStep = useGameStore((state) => state.tutorialStep);
   const start = useGameStore((state) => state.start);
+  const startTutorial = useGameStore((state) => state.startTutorial);
+  const finishTutorial = useGameStore((state) => state.finishTutorial);
   const restart = useGameStore((state) => state.restart);
   const togglePause = useGameStore((state) => state.togglePause);
 
@@ -47,11 +56,17 @@ export function GamePreview() {
             <DirectionCompass />
             <LayerPressureAlert pressure={snapshot.layerPressure} />
             <MobileHud snapshot={snapshot} />
-            <MobileControls disabled={snapshot.status !== 'running'} />
+            <MobileControls status={snapshot.status} />
             <TabletHints />
-            {snapshot.status === 'ready' && <ReadyOverlay onStart={start} />}
+            {snapshot.status === 'ready' && (
+              <ReadyOverlay onStart={start} onTutorial={startTutorial} />
+            )}
+            {tutorialStep && (
+              <TutorialOverlay step={tutorialStep} onFinish={finishTutorial} />
+            )}
             <StatusOverlay
               snapshot={snapshot}
+              resumeCountdown={resumeCountdown}
               onRestart={restart}
               onTogglePause={togglePause}
             />

@@ -1,12 +1,20 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { Crosshair, Flame, Play, RotateCcw } from 'lucide-react';
+import {
+  Crosshair,
+  Eye,
+  Flame,
+  GraduationCap,
+  Play,
+  RotateCcw,
+} from 'lucide-react';
 import type {
   GameFeedback as Feedback,
   GameMode,
   GameSnapshot,
 } from '@/src/entities/game';
+import type { TutorialStep } from '@/src/features/control-game';
 import { Button } from '@/src/shared/ui';
 
 export function GameFeedback({ feedback }: { readonly feedback: Feedback }) {
@@ -28,8 +36,10 @@ export function GameFeedback({ feedback }: { readonly feedback: Feedback }) {
 
 export function ReadyOverlay({
   onStart,
+  onTutorial,
 }: {
   readonly onStart: (mode: GameMode) => void;
+  readonly onTutorial: () => void;
 }) {
   const primaryAction = useRef<HTMLButtonElement>(null);
   useEffect(() => primaryAction.current?.focus(), []);
@@ -76,6 +86,13 @@ export function ReadyOverlay({
             onStart={onStart}
           />
         </div>
+        <Button
+          variant="outline"
+          className="game-stat mt-3 w-full"
+          onClick={onTutorial}
+        >
+          <GraduationCap /> Пройти короткое обучение
+        </Button>
         <p className="theme-subtle mt-4 text-center text-[11px]">
           WASD — движение · мышь — камера · Space — бросить
         </p>
@@ -131,27 +148,66 @@ function ModeButton({
 
 export function StatusOverlay({
   snapshot,
+  resumeCountdown,
   onRestart,
   onTogglePause,
 }: {
   readonly snapshot: GameSnapshot;
+  readonly resumeCountdown: number | null;
   readonly onRestart: () => void;
   readonly onTogglePause: () => void;
 }) {
   const primaryAction = useRef<HTMLButtonElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
-  const isVisible =
-    snapshot.status === 'paused' || snapshot.status === 'game-over';
   useEffect(() => {
     const currentDialog = dialog.current;
-    if (!isVisible || !currentDialog) return;
+    if (snapshot.status !== 'game-over' || !currentDialog) return;
     currentDialog.showModal();
     primaryAction.current?.focus();
     return () => currentDialog.close();
-  }, [isVisible]);
-  if (!isVisible) return null;
-  const isGameOver = snapshot.status === 'game-over';
-  const action = isGameOver ? onRestart : onTogglePause;
+  }, [snapshot.status]);
+
+  if (snapshot.status === 'paused')
+    return (
+      <div className="pointer-events-none absolute inset-0 z-40 flex items-end justify-center p-4 sm:items-start sm:p-5">
+        {resumeCountdown !== null && (
+          <output
+            className="game-dialog absolute left-1/2 top-1/2 grid size-24 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border font-mono text-5xl font-semibold shadow-2xl backdrop-blur-xl"
+            aria-live="assertive"
+            aria-label={`Продолжение через ${resumeCountdown}`}
+          >
+            {resumeCountdown}
+          </output>
+        )}
+        <section
+          className="game-dialog pointer-events-auto flex w-full max-w-lg items-center gap-3 rounded-2xl border p-3 pr-3 shadow-2xl backdrop-blur-xl sm:p-4"
+          aria-label="Игра на паузе"
+        >
+          <span className="theme-cyan grid size-10 shrink-0 place-items-center rounded-xl bg-cyan-300/10">
+            <Eye />
+          </span>
+          <div className="min-w-0 flex-1">
+            <strong className="block text-sm">Режим осмотра</strong>
+            <span className="theme-muted block truncate text-xs">
+              Время остановлено — куб можно вращать и приближать
+            </span>
+          </div>
+          <Button
+            aria-label={
+              resumeCountdown === null ? 'Продолжить игру' : 'Отменить отсчёт'
+            }
+            onClick={onTogglePause}
+          >
+            <Play />
+            <span className="hidden sm:inline">
+              {resumeCountdown === null ? 'Продолжить' : 'Отмена'}
+            </span>
+          </Button>
+        </section>
+      </div>
+    );
+
+  if (snapshot.status !== 'game-over') return null;
   return (
     <div className="game-overlay absolute inset-0 z-40 grid place-items-center p-6 backdrop-blur-md">
       <dialog
@@ -159,31 +215,99 @@ export function StatusOverlay({
         className="game-dialog game-modal m-auto max-h-[calc(100dvh-6rem)] w-full max-w-sm overflow-y-auto rounded-3xl border p-7 text-center text-inherit shadow-[0_28px_90px_rgba(0,0,0,.3)]"
         aria-modal="true"
         aria-labelledby="status-title"
-        onKeyDown={(event) => {
-          if (event.key === 'Escape' && !isGameOver) action();
-        }}
       >
         <p className="theme-cyan text-xs uppercase tracking-[.22em]">
-          {isGameOver ? 'Куб заполнен' : 'Пауза'}
+          Куб заполнен
         </p>
         <h2 id="status-title" className="mt-3 text-2xl font-semibold">
-          {isGameOver ? 'Партия завершена' : 'Остановили время'}
+          Партия завершена
         </h2>
         <p className="theme-muted mt-2 text-sm leading-6">
           Счёт: {snapshot.score.toLocaleString('ru-RU')}
         </p>
-        <Button ref={primaryAction} className="mt-6 w-full" onClick={action}>
-          {isGameOver ? (
-            <>
-              <RotateCcw /> Новая игра
-            </>
-          ) : (
-            <>
-              <Play /> Продолжить
-            </>
-          )}
+        <Button ref={primaryAction} className="mt-6 w-full" onClick={onRestart}>
+          <RotateCcw /> Новая игра
         </Button>
       </dialog>
     </div>
+  );
+}
+
+const TUTORIAL_CONTENT: Record<
+  TutorialStep,
+  {
+    readonly title: string;
+    readonly description: string;
+    readonly hint: string;
+  }
+> = {
+  camera: {
+    title: 'Осмотрите пространство',
+    description:
+      'Потяните куб мышью или пальцем. Колесо и pinch меняют масштаб.',
+    hint: 'Поверните камеру',
+  },
+  move: {
+    title: 'Сдвиньте фигуру',
+    description: 'WASD двигают фигуру относительно текущего ракурса камеры.',
+    hint: 'Нажмите W, A, S или D',
+  },
+  rotate: {
+    title: 'Измените ориентацию',
+    description: 'Q и E вращают по вертикали, стрелки — по двум другим осям.',
+    hint: 'Нажмите Q, E или стрелку',
+  },
+  drop: {
+    title: 'Установите фигуру',
+    description:
+      'Проекция показывает посадку. Space мгновенно опускает фигуру.',
+    hint: 'Нажмите Space',
+  },
+  complete: {
+    title: 'Вы готовы',
+    description:
+      'Собирайте полностью заполненные горизонтальные слои внутри куба.',
+    hint: 'Начните настоящую игру',
+  },
+};
+
+export function TutorialOverlay({
+  step,
+  onFinish,
+}: {
+  readonly step: TutorialStep;
+  readonly onFinish: () => void;
+}) {
+  const content = TUTORIAL_CONTENT[step];
+  const current = ['camera', 'move', 'rotate', 'drop'].indexOf(step);
+  return (
+    <aside className="pointer-events-none absolute inset-x-3 bottom-28 z-30 sm:inset-x-auto sm:bottom-5 sm:left-5 sm:w-80">
+      <div className="game-dialog rounded-2xl border p-4 shadow-2xl backdrop-blur-xl">
+        <div className="flex items-center justify-between gap-3">
+          <span className="theme-cyan text-[9px] uppercase tracking-[.2em]">
+            Обучение
+          </span>
+          <span className="theme-subtle font-mono text-[10px]">
+            {step === 'complete' ? 'Готово' : `${current + 1}/4`}
+          </span>
+        </div>
+        <h2 className="mt-2 text-base font-semibold">{content.title}</h2>
+        <p className="theme-muted mt-1 text-xs leading-5">
+          {content.description}
+        </p>
+        {step === 'complete' ? (
+          <Button
+            className="pointer-events-auto mt-3 w-full"
+            onClick={onFinish}
+          >
+            <Play /> Начать Focus
+          </Button>
+        ) : (
+          <p className="theme-cyan mt-3 text-[10px] font-medium uppercase tracking-[.12em]">
+            {content.hint}
+          </p>
+        )}
+      </div>
+    </aside>
   );
 }

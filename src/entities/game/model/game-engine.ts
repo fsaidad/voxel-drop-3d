@@ -15,13 +15,11 @@ import {
 export const GAME_RULES = {
   focus: {
     gravityStartTicks: 21,
-    minimumGravityTicks: 7,
     lockDelayTicks: 12,
     lockResetLimit: 10,
   },
   hardcore: {
     gravityStartTicks: 14,
-    minimumGravityTicks: 4,
     lockDelayTicks: 7,
     lockResetLimit: 5,
   },
@@ -183,10 +181,7 @@ export class GameEngine {
       return true;
     }
     this.groundedTicks = 0;
-    const gravityEvery = Math.max(
-      rules.minimumGravityTicks,
-      rules.gravityStartTicks - (this.level - 1),
-    );
+    const gravityEvery = rules.gravityStartTicks;
     if (this.tickCount % gravityEvery !== 0) return false;
     const candidate = {
       ...this.active,
@@ -229,7 +224,6 @@ export class GameEngine {
       ghost,
       next: this.queue.peek(this.mode === 'focus' ? 3 : 1),
       score: this.score,
-      level: this.level,
       layers: this.layers,
       pieces: this.pieces,
       height: this.height,
@@ -240,10 +234,6 @@ export class GameEngine {
       feedback: this.feedback,
       tick: this.tickCount,
     };
-  }
-
-  get level(): number {
-    return 1 + Math.floor(this.layers / 10);
   }
 
   get height(): number {
@@ -302,7 +292,6 @@ export class GameEngine {
 
   private lock(dropPoints = 0): void {
     if (!this.active) return;
-    const levelAtLock = this.level;
     for (const cell of this.worldCells(this.active))
       this.board[this.index(cell)] = this.active.color;
     this.pieces += 1;
@@ -312,9 +301,7 @@ export class GameEngine {
     if (cleared > 0) {
       this.layers += cleared;
       const table = [0, 100, 300, 500, 800];
-      clearPoints =
-        (table[Math.min(cleared, 4)] ?? 800 + (cleared - 4) * 400) *
-        levelAtLock;
+      clearPoints = table[Math.min(cleared, 4)] ?? 800 + (cleared - 4) * 400;
       this.score += clearPoints;
     }
     this.feedback = {

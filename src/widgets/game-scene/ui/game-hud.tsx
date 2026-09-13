@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import {
   BOARD_SIZE,
+  type GameStatus,
   type GameSnapshot,
   type LayerPressure,
 } from '@/src/entities/game';
@@ -39,13 +40,7 @@ export function GameHeader({ snapshot }: { readonly snapshot: GameSnapshot }) {
               {snapshot.status === 'ready' ? 'Ready' : snapshot.mode}
             </span>
           </div>
-          <p className="theme-muted text-xs">
-            Пространственная головоломка
-            <span className="hidden sm:inline">
-              {' '}
-              · уровень {snapshot.level}
-            </span>
-          </p>
+          <p className="theme-muted text-xs">Пространственная головоломка</p>
         </div>
       </div>
       <div className="flex items-center gap-2">
@@ -102,8 +97,8 @@ export function SessionSidebar({
       <div className="mt-3 grid grid-cols-2 gap-3">
         <div className="game-stat rounded-2xl border p-3">
           <Metric
-            label="Уровень"
-            value={String(snapshot.level).padStart(2, '0')}
+            label="Режим"
+            value={snapshot.mode === 'focus' ? 'Focus' : 'Hard'}
           />
         </div>
         <div className="game-stat rounded-2xl border p-3">
@@ -213,12 +208,14 @@ export function LayerPressureAlert({
   );
 }
 
-export function MobileControls({ disabled }: { readonly disabled: boolean }) {
+export function MobileControls({ status }: { readonly status: GameStatus }) {
   const moveRelative = useGameStore((state) => state.moveRelative);
   const rotate = useGameStore((state) => state.rotate);
   const drop = useGameStore((state) => state.drop);
   const softDrop = useGameStore((state) => state.softDrop);
   const togglePause = useGameStore((state) => state.togglePause);
+  const actionDisabled = status !== 'running';
+  const pauseDisabled = status !== 'running' && status !== 'paused';
   return (
     <div className="absolute inset-x-3 bottom-3 z-20 grid grid-cols-[1fr_auto_1fr] items-end gap-2 sm:hidden">
       <div className="game-glass grid grid-cols-3 gap-1 rounded-2xl border p-1.5 shadow-2xl backdrop-blur-xl">
@@ -226,26 +223,26 @@ export function MobileControls({ disabled }: { readonly disabled: boolean }) {
         <Control
           icon={<ArrowUp />}
           label="Вперёд"
-          disabled={disabled}
+          disabled={actionDisabled}
           onClick={() => moveRelative('forward')}
         />
         <span />
         <Control
           icon={<ArrowLeft />}
           label="Влево"
-          disabled={disabled}
+          disabled={actionDisabled}
           onClick={() => moveRelative('left')}
         />
         <Control
           icon={<ArrowDown />}
           label="Назад"
-          disabled={disabled}
+          disabled={actionDisabled}
           onClick={() => moveRelative('backward')}
         />
         <Control
           icon={<ArrowRight />}
           label="Вправо"
-          disabled={disabled}
+          disabled={actionDisabled}
           onClick={() => moveRelative('right')}
         />
       </div>
@@ -253,7 +250,7 @@ export function MobileControls({ disabled }: { readonly disabled: boolean }) {
         <Button
           className="h-11 rounded-xl px-3 shadow-[0_0_24px_rgba(57,221,255,.18)]"
           onClick={drop}
-          disabled={disabled}
+          disabled={actionDisabled}
         >
           Бросить
         </Button>
@@ -261,7 +258,7 @@ export function MobileControls({ disabled }: { readonly disabled: boolean }) {
           variant="outline"
           className="game-glass h-9 rounded-xl px-3 text-[11px] backdrop-blur-xl"
           onClick={softDrop}
-          disabled={disabled}
+          disabled={actionDisabled}
         >
           <ChevronsDown /> Ниже
         </Button>
@@ -270,25 +267,25 @@ export function MobileControls({ disabled }: { readonly disabled: boolean }) {
         <Control
           icon={<Rotate3D />}
           label="Поворот X"
-          disabled={disabled}
+          disabled={actionDisabled}
           onClick={() => rotate('x')}
         />
         <Control
           icon={<Rotate3D />}
           label="Поворот Y"
-          disabled={disabled}
+          disabled={actionDisabled}
           onClick={() => rotate('y')}
         />
         <Control
           icon={<Rotate3D />}
           label="Поворот Z"
-          disabled={disabled}
+          disabled={actionDisabled}
           onClick={() => rotate('z')}
         />
         <Control
           icon={<Pause />}
           label="Пауза"
-          disabled={disabled}
+          disabled={pauseDisabled}
           onClick={togglePause}
         />
       </div>
