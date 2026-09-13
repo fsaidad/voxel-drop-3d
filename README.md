@@ -50,8 +50,12 @@ Both modes keep a stable pace throughout the session; there is no level system.
 The simulation waits on the start screen, so the player can choose a camera angle and mode before gravity begins.
 Placement feedback, earned-point callouts, piece count, and stack height keep the state of the 3D board readable without covering the playfield.
 Grounded pieces remain movable for a short lock delay; a warm edge indicates
-the landing state. Layers above 72% occupancy receive an amber guide and a
-compact completion warning.
+the landing state. Dense layers receive a completion guide; a high stack marks
+the critical zone in both the WebGL volume and the HUD.
+
+Short synthesized cues distinguish the start, placement, layer clear, and game
+over states. They use the Web Audio API, require no downloaded audio assets, and
+can be disabled from the header; the preference is stored locally.
 
 ## Appearance
 
@@ -73,4 +77,4 @@ earned during that run.
 
 The repository contains only application code, tests, documentation, and CI configuration. Local environments, build output, hosting metadata, and generated files are ignored. Dependencies are pinned and every push is checked with linting, type checking, tests, and a production build.
 
-The 3D scene is loaded as a separate client chunk and renders on demand, keeping the initial shell responsive and avoiding continuous GPU work while the board is idle.
+The 3D scene is loaded as a separate client chunk and renders on demand, keeping the initial shell responsive and avoiding continuous GPU work while the board is idle. Board voxels remain instanced, while feedback animation runs in the lightweight interface layer.

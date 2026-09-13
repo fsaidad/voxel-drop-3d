@@ -16,9 +16,18 @@ export function GameFeedback({ feedback }: { readonly feedback: Feedback }) {
   const isClear = feedback.kind === 'clear';
   return (
     <>
-      <div className="placement-pulse pointer-events-none absolute inset-0" />
+      <div
+        className={`${isClear ? 'layer-clear-flash' : 'placement-pulse'} pointer-events-none absolute inset-0`}
+        aria-hidden="true"
+      />
+      {isClear && (
+        <div
+          className="layer-clear-scan pointer-events-none absolute inset-x-0 z-10 h-px"
+          aria-hidden="true"
+        />
+      )}
       <output
-        className={`game-feedback game-glass pointer-events-none absolute inset-x-0 top-16 z-20 mx-auto w-fit rounded-full border px-4 py-2 text-center text-xs font-medium shadow-2xl backdrop-blur-xl ${isClear ? 'border-amber-300/30 text-amber-700 dark:text-amber-100' : 'theme-cyan'}`}
+        className={`game-feedback game-glass pointer-events-none absolute inset-x-0 top-16 z-20 mx-auto w-fit rounded-md border px-4 py-2 text-center font-mono text-[10px] font-medium shadow-lg ${isClear ? 'border-amber-300/40 text-amber-700 dark:text-amber-100' : 'theme-cyan'}`}
         aria-live="polite"
       >
         {isClear

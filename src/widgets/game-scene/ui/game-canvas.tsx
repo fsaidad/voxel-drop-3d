@@ -121,6 +121,7 @@ function GameCube({ colorScheme }: { readonly colorScheme: ColorScheme }) {
   const selectedSkin = useProgressionStore((state) => state.selectedSkin);
   const skin = getVoxelSkin(selectedSkin);
   const sceneTheme = SCENE_THEMES[colorScheme];
+  const danger = snapshot.height >= BOARD_SIZE - 2;
   const boardCells = useMemo(() => {
     const cells: RenderCell[] = [];
     for (let y = 0; y < BOARD_SIZE; y += 1)
@@ -182,7 +183,7 @@ function GameCube({ colorScheme }: { readonly colorScheme: ColorScheme }) {
           opacity={0.025}
           depthWrite={false}
         />
-        <Edges color={sceneTheme.edge} threshold={15} />
+        <Edges color={danger ? '#fb7185' : sceneTheme.edge} threshold={15} />
       </mesh>
       <gridHelper
         args={[BOARD_SIZE, BOARD_SIZE, sceneTheme.grid, sceneTheme.gridSubtle]}
@@ -202,6 +203,21 @@ function GameCube({ colorScheme }: { readonly colorScheme: ColorScheme }) {
             depthWrite={false}
           />
           <Edges color="#ffd166" threshold={15} />
+        </mesh>
+      )}
+      {danger && (
+        <mesh
+          position={[0, toScene(BOARD_SIZE - 2) - 0.48, 0]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          renderOrder={3}
+        >
+          <planeGeometry args={[BOARD_SIZE - 0.08, BOARD_SIZE - 0.08]} />
+          <meshBasicMaterial
+            color="#fb7185"
+            transparent
+            opacity={0.055}
+            depthWrite={false}
+          />
         </mesh>
       )}
       <ActiveVoxels

@@ -2,6 +2,7 @@
 
 import { lazy, Suspense, useState } from 'react';
 import { useGameController, useGameStore } from '@/src/features/control-game';
+import { useGameAudio } from '@/src/features/game-audio';
 import {
   AchievementToast,
   ProfileOverlay,
@@ -45,6 +46,7 @@ export function GamePreview() {
   const lastSession = useProgressionStore((state) => state.lastSession);
   const [profileOpen, setProfileOpen] = useState(false);
   useProgressionController(snapshot, tutorialStep !== null, sessionId);
+  useGameAudio(snapshot);
 
   const openProfile = () => {
     if (snapshot.status === 'running') pause();
@@ -64,6 +66,12 @@ export function GamePreview() {
             <div className="game-vignette pointer-events-none absolute inset-0" />
             <div className="game-stage-top pointer-events-none absolute inset-x-0 top-0 h-24" />
             <div className="game-stage-bottom pointer-events-none absolute inset-x-0 bottom-0 h-36 sm:h-24" />
+            {snapshot.height >= 6 && (
+              <div
+                className="danger-vignette pointer-events-none absolute inset-0"
+                aria-hidden="true"
+              />
+            )}
             {snapshot.feedback && (
               <GameFeedback
                 key={snapshot.feedback.id}
@@ -72,7 +80,10 @@ export function GamePreview() {
             )}
             <AchievementToast />
             <DirectionCompass />
-            <LayerPressureAlert pressure={snapshot.layerPressure} />
+            <LayerPressureAlert
+              pressure={snapshot.layerPressure}
+              height={snapshot.height}
+            />
             <MobileHud snapshot={snapshot} />
             <MobileControls status={snapshot.status} />
             <TabletHints />

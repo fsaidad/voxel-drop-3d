@@ -241,6 +241,40 @@ button {
   }
 }
 
+@keyframes layer-clear-flash {
+  0% {
+    opacity: 0;
+  }
+  16% {
+    opacity: 0.72;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes layer-clear-scan {
+  0% {
+    top: 78%;
+    opacity: 0;
+    transform: scaleX(0.25);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    top: 24%;
+    opacity: 0;
+    transform: scaleX(0.9);
+  }
+}
+
+@keyframes danger-signal {
+  50% {
+    border-color: rgb(251 113 133 / 70%);
+  }
+}
+
 .game-feedback {
   animation: game-feedback 1.35s ease-out both;
 }
@@ -252,6 +286,40 @@ button {
     transparent 42%
   );
   animation: placement-pulse 0.55s ease-out both;
+}
+
+.layer-clear-flash {
+  background: radial-gradient(
+    circle at 50% 58%,
+    rgb(253 211 77 / 22%),
+    rgb(57 221 255 / 8%) 35%,
+    transparent 68%
+  );
+  animation: layer-clear-flash 0.7s ease-out both;
+}
+
+.layer-clear-scan {
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgb(253 224 71 / 85%),
+    transparent
+  );
+  box-shadow: 0 0 18px rgb(253 224 71 / 65%);
+  animation: layer-clear-scan 0.75s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.danger-vignette {
+  background: radial-gradient(
+    circle at 50% 50%,
+    transparent 48%,
+    rgb(244 63 94 / 7%) 78%,
+    rgb(244 63 94 / 16%) 100%
+  );
+}
+
+.danger-signal {
+  animation: danger-signal 1.4s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

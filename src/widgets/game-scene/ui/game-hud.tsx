@@ -18,6 +18,7 @@ import {
   type LayerPressure,
 } from '@/src/entities/game';
 import { useGameStore } from '@/src/features/control-game';
+import { SoundToggle } from '@/src/features/game-audio';
 import { Button } from '@/src/shared/ui';
 
 export function GameHeader({
@@ -55,6 +56,7 @@ export function GameHeader({
             {snapshot.score.toLocaleString('ru-RU')}
           </strong>
         </div>
+        <SoundToggle />
         <Button
           variant="outline"
           size="icon"
@@ -205,15 +207,21 @@ export function DirectionCompass() {
 
 export function LayerPressureAlert({
   pressure,
+  height,
 }: {
   readonly pressure: LayerPressure | null;
+  readonly height: number;
 }) {
-  if (!pressure || pressure.ratio < 0.72) return null;
+  const tallStack = height >= BOARD_SIZE - 2;
+  const denseLayer = pressure !== null && pressure.ratio >= 0.72;
+  if (!tallStack && !denseLayer) return null;
   return (
-    <output className="game-glass pointer-events-none absolute right-3 top-24 z-10 rounded-xl border border-amber-300/30 px-3 py-2 text-right text-[10px] text-amber-700 shadow-lg backdrop-blur-md dark:text-amber-100 sm:right-4">
-      <span className="block uppercase tracking-[.16em]">Почти заполнен</span>
+    <output className="danger-signal game-glass pointer-events-none absolute right-3 top-24 z-10 rounded-md border border-rose-400/40 px-3 py-2 text-right text-[10px] text-rose-700 dark:text-rose-200 sm:right-4">
+      <span className="block font-mono">КРИТИЧЕСКАЯ ЗОНА</span>
       <strong className="mt-0.5 block font-mono">
-        Слой {pressure.layer + 1} · {Math.round(pressure.ratio * 100)}%
+        {denseLayer && pressure
+          ? `Слой ${pressure.layer + 1} · ${Math.round(pressure.ratio * 100)}%`
+          : `Высота ${height}/${BOARD_SIZE}`}
       </strong>
     </output>
   );
