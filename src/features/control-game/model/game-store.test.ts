@@ -39,8 +39,14 @@ describe('game session controls', () => {
     useGameStore.getState().registerCameraInteraction();
     expect(useGameStore.getState().tutorialStep).toBe('move');
     useGameStore.getState().moveRelative('left');
-    expect(useGameStore.getState().tutorialStep).toBe('rotate');
+    expect(useGameStore.getState().tutorialStep).toBe('yaw');
+    useGameStore.getState().rotate('x');
+    expect(useGameStore.getState().tutorialStep).toBe('yaw');
     useGameStore.getState().rotate('y');
+    expect(useGameStore.getState().tutorialStep).toBe('tilt');
+    useGameStore.getState().rotate('y');
+    expect(useGameStore.getState().tutorialStep).toBe('tilt');
+    useGameStore.getState().rotate('x');
     expect(useGameStore.getState().tutorialStep).toBe('drop');
     useGameStore.getState().drop();
     expect(useGameStore.getState().tutorialStep).toBe('complete');

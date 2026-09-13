@@ -37,8 +37,8 @@ to the world axes after every camera turn.
 
 Pause freezes the simulation but keeps orbit and zoom available for inspecting
 the board. Resuming uses a short countdown. A separate interactive tutorial
-teaches camera-relative movement, piece rotation, and placement without gravity
-or score pressure.
+teaches camera-relative movement, all three rotation axes, and placement without
+gravity or score pressure.
 
 ## Game modes
 

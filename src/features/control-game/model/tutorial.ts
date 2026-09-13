@@ -1,7 +1,8 @@
 export const TUTORIAL_STEPS = [
   'camera',
   'move',
-  'rotate',
+  'yaw',
+  'tilt',
   'drop',
   'complete',
 ] as const;

@@ -69,7 +69,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     rotate: (axis, direction = 1) => {
       if (engine.rotate(axis, direction)) {
         publish();
-        advanceTutorial('rotate');
+        advanceTutorial(axis === 'y' ? 'yaw' : 'tilt');
       }
     },
     drop: () => {

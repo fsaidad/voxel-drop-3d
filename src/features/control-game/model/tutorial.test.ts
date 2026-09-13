@@ -4,8 +4,9 @@ import { nextTutorialStep } from './tutorial';
 describe('tutorial progression', () => {
   it('follows the player interaction sequence', () => {
     expect(nextTutorialStep('camera')).toBe('move');
-    expect(nextTutorialStep('move')).toBe('rotate');
-    expect(nextTutorialStep('rotate')).toBe('drop');
+    expect(nextTutorialStep('move')).toBe('yaw');
+    expect(nextTutorialStep('yaw')).toBe('tilt');
+    expect(nextTutorialStep('tilt')).toBe('drop');
     expect(nextTutorialStep('drop')).toBe('complete');
   });
 

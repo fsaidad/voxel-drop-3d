@@ -252,10 +252,17 @@ const TUTORIAL_CONTENT: Record<
     description: 'WASD двигают фигуру относительно текущего ракурса камеры.',
     hint: 'Нажмите W, A, S или D',
   },
-  rotate: {
-    title: 'Измените ориентацию',
-    description: 'Q и E вращают по вертикали, стрелки — по двум другим осям.',
-    hint: 'Нажмите Q, E или стрелку',
+  yaw: {
+    title: 'Поверните вокруг Y',
+    description:
+      'Q и E поворачивают фигуру влево и вправо вокруг вертикальной оси.',
+    hint: 'Нажмите Q или E',
+  },
+  tilt: {
+    title: 'Наклоните фигуру',
+    description:
+      'Стрелки вверх и вниз вращают вокруг X, влево и вправо — вокруг Z.',
+    hint: 'Нажмите любую стрелку',
   },
   drop: {
     title: 'Установите фигуру',
@@ -279,7 +286,7 @@ export function TutorialOverlay({
   readonly onFinish: () => void;
 }) {
   const content = TUTORIAL_CONTENT[step];
-  const current = ['camera', 'move', 'rotate', 'drop'].indexOf(step);
+  const current = ['camera', 'move', 'yaw', 'tilt', 'drop'].indexOf(step);
   return (
     <aside className="pointer-events-none absolute inset-x-3 bottom-28 z-30 sm:inset-x-auto sm:bottom-5 sm:left-5 sm:w-80">
       <div className="game-dialog rounded-2xl border p-4 shadow-2xl backdrop-blur-xl">
@@ -288,7 +295,7 @@ export function TutorialOverlay({
             Обучение
           </span>
           <span className="theme-subtle font-mono text-[10px]">
-            {step === 'complete' ? 'Готово' : `${current + 1}/4`}
+            {step === 'complete' ? 'Готово' : `${current + 1}/5`}
           </span>
         </div>
         <h2 className="mt-2 text-base font-semibold">{content.title}</h2>
