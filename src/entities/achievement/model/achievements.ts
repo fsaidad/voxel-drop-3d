@@ -2,12 +2,17 @@ export type AchievementId =
   | 'first-placement'
   | 'first-layer'
   | 'voxel-builder'
-  | 'layer-architect';
+  | 'layer-architect'
+  | 'hardcore-initiate'
+  | 'hardcore-veteran'
+  | 'score-hunter';
 
 export interface ProgressMetrics {
   readonly piecesPlaced: number;
   readonly layersCleared: number;
   readonly bestScore: number;
+  readonly gamesPlayed: number;
+  readonly hardcorePiecesPlaced: number;
 }
 
 export interface Achievement {
@@ -41,6 +46,24 @@ export const ACHIEVEMENTS: readonly Achievement[] = [
     title: 'Архитектор слоёв',
     description: 'Очистить 10 слоёв',
     test: ({ layersCleared }) => layersCleared >= 10,
+  },
+  {
+    id: 'hardcore-initiate',
+    title: 'Без страховки',
+    description: 'Установить первую фигуру в Hardcore',
+    test: ({ hardcorePiecesPlaced }) => hardcorePiecesPlaced >= 1,
+  },
+  {
+    id: 'hardcore-veteran',
+    title: 'Холодный расчёт',
+    description: 'Установить 25 фигур в Hardcore',
+    test: ({ hardcorePiecesPlaced }) => hardcorePiecesPlaced >= 25,
+  },
+  {
+    id: 'score-hunter',
+    title: 'Охотник за очками',
+    description: 'Набрать 1 000 очков за одну партию',
+    test: ({ bestScore }) => bestScore >= 1000,
   },
 ];
 

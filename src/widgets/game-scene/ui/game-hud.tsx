@@ -9,6 +9,7 @@ import {
   Pause,
   Play,
   RotateCcw,
+  UserRound,
 } from 'lucide-react';
 import {
   BOARD_SIZE,
@@ -19,7 +20,13 @@ import {
 import { useGameStore } from '@/src/features/control-game';
 import { Button } from '@/src/shared/ui';
 
-export function GameHeader({ snapshot }: { readonly snapshot: GameSnapshot }) {
+export function GameHeader({
+  snapshot,
+  onOpenProfile,
+}: {
+  readonly snapshot: GameSnapshot;
+  readonly onOpenProfile: () => void;
+}) {
   const togglePause = useGameStore((state) => state.togglePause);
   const restart = useGameStore((state) => state.restart);
   const canPause =
@@ -51,6 +58,16 @@ export function GameHeader({ snapshot }: { readonly snapshot: GameSnapshot }) {
             {snapshot.score.toLocaleString('ru-RU')}
           </strong>
         </div>
+        <Button
+          variant="outline"
+          size="icon"
+          className="game-stat"
+          aria-label="Открыть профиль"
+          onClick={onOpenProfile}
+          disabled={snapshot.status === 'game-over'}
+        >
+          <UserRound />
+        </Button>
         <Button
           variant="outline"
           size="icon"

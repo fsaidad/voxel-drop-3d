@@ -6,16 +6,18 @@ import {
   Eye,
   Flame,
   GraduationCap,
+  House,
   Play,
   RotateCcw,
 } from 'lucide-react';
+import { getAchievement } from '@/src/entities/achievement';
 import type {
   GameFeedback as Feedback,
   GameMode,
   GameSnapshot,
 } from '@/src/entities/game';
 import type { TutorialStep } from '@/src/features/control-game';
-import { CosmeticPicker } from '@/src/features/player-progression';
+import type { SessionSummary } from '@/src/features/player-progression';
 import { Button } from '@/src/shared/ui';
 
 export function GameFeedback({ feedback }: { readonly feedback: Feedback }) {
@@ -94,7 +96,6 @@ export function ReadyOverlay({
         >
           <GraduationCap /> Пройти короткое обучение
         </Button>
-        <CosmeticPicker />
         <p className="theme-subtle mt-4 text-center text-[11px]">
           WASD — движение · мышь — камера · Space — бросить
         </p>
@@ -151,12 +152,16 @@ function ModeButton({
 export function StatusOverlay({
   snapshot,
   resumeCountdown,
+  sessionSummary,
   onRestart,
+  onReturnToMenu,
   onTogglePause,
 }: {
   readonly snapshot: GameSnapshot;
   readonly resumeCountdown: number | null;
+  readonly sessionSummary: SessionSummary | null;
   readonly onRestart: () => void;
+  readonly onReturnToMenu: () => void;
   readonly onTogglePause: () => void;
 }) {
   const primaryAction = useRef<HTMLButtonElement>(null);
@@ -230,9 +235,33 @@ export function StatusOverlay({
         <p className="theme-muted mt-2 text-sm leading-6">
           Счёт: {snapshot.score.toLocaleString('ru-RU')}
         </p>
-        <Button ref={primaryAction} className="mt-6 w-full" onClick={onRestart}>
-          <RotateCcw /> Новая игра
-        </Button>
+        {sessionSummary?.isNewBest && (
+          <p className="mt-3 rounded-full bg-amber-300/12 px-3 py-1 text-xs font-medium text-amber-700 dark:text-amber-100">
+            Новый рекорд
+          </p>
+        )}
+        {sessionSummary && sessionSummary.unlockedAchievements.length > 0 && (
+          <div className="game-stat mt-4 rounded-2xl border p-3 text-left">
+            <p className="theme-violet text-[9px] uppercase tracking-[.16em]">
+              Получено за партию
+            </p>
+            <div className="mt-2 grid gap-1">
+              {sessionSummary.unlockedAchievements.map((id) => (
+                <span key={id} className="text-xs">
+                  {getAchievement(id).title}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className="mt-6 grid grid-cols-2 gap-2">
+          <Button ref={primaryAction} onClick={onRestart}>
+            <RotateCcw /> Ещё раз
+          </Button>
+          <Button variant="outline" onClick={onReturnToMenu}>
+            <House /> В меню
+          </Button>
+        </div>
       </dialog>
     </div>
   );

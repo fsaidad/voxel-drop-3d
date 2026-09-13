@@ -1,10 +1,12 @@
 'use client';
 
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useGameController, useGameStore } from '@/src/features/control-game';
 import {
   AchievementToast,
+  ProfileOverlay,
   useProgressionController,
+  useProgressionStore,
 } from '@/src/features/player-progression';
 import {
   DirectionCompass,
@@ -32,17 +34,27 @@ export function GamePreview() {
   const snapshot = useGameStore((state) => state.snapshot);
   const resumeCountdown = useGameStore((state) => state.resumeCountdown);
   const tutorialStep = useGameStore((state) => state.tutorialStep);
+  const sessionId = useGameStore((state) => state.sessionId);
   const start = useGameStore((state) => state.start);
   const startTutorial = useGameStore((state) => state.startTutorial);
   const finishTutorial = useGameStore((state) => state.finishTutorial);
   const restart = useGameStore((state) => state.restart);
+  const returnToMenu = useGameStore((state) => state.returnToMenu);
+  const pause = useGameStore((state) => state.pause);
   const togglePause = useGameStore((state) => state.togglePause);
-  useProgressionController(snapshot, tutorialStep !== null);
+  const lastSession = useProgressionStore((state) => state.lastSession);
+  const [profileOpen, setProfileOpen] = useState(false);
+  useProgressionController(snapshot, tutorialStep !== null, sessionId);
+
+  const openProfile = () => {
+    if (snapshot.status === 'running') pause();
+    setProfileOpen(true);
+  };
 
   return (
     <main className="h-dvh overflow-hidden p-0 sm:p-4 lg:p-6">
       <div className="game-shell mx-auto grid h-full max-w-[1600px] grid-rows-[auto_minmax(0,1fr)] overflow-hidden backdrop-blur-xl sm:rounded-[1.5rem] sm:border">
-        <GameHeader snapshot={snapshot} />
+        <GameHeader snapshot={snapshot} onOpenProfile={openProfile} />
         <section className="grid min-h-0 lg:grid-cols-[210px_minmax(0,1fr)_210px]">
           <SessionSidebar snapshot={snapshot} />
           <div className="game-stage relative min-h-0 overflow-hidden">
@@ -73,13 +85,16 @@ export function GamePreview() {
             <StatusOverlay
               snapshot={snapshot}
               resumeCountdown={resumeCountdown}
+              sessionSummary={lastSession}
               onRestart={restart}
+              onReturnToMenu={returnToMenu}
               onTogglePause={togglePause}
             />
           </div>
           <NextSidebar snapshot={snapshot} />
         </section>
       </div>
+      {profileOpen && <ProfileOverlay onClose={() => setProfileOpen(false)} />}
     </main>
   );
 }

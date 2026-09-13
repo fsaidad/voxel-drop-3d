@@ -20,6 +20,7 @@ interface GameStore {
   readonly movementBasis: MovementBasis;
   readonly resumeCountdown: number | null;
   readonly tutorialStep: TutorialStep | null;
+  readonly sessionId: number;
   readonly moveRelative: (intent: MoveIntent) => void;
   readonly setCameraOrientation: (cameraX: number, cameraZ: number) => void;
   readonly registerCameraInteraction: () => void;
@@ -34,6 +35,7 @@ interface GameStore {
   readonly startTutorial: () => void;
   readonly finishTutorial: () => void;
   readonly restart: () => void;
+  readonly returnToMenu: () => void;
 }
 
 let engine = new GameEngine(20260908);
@@ -49,6 +51,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     movementBasis: getSnappedMovementBasis(10.5, 12.5),
     resumeCountdown: null,
     tutorialStep: null,
+    sessionId: 0,
     moveRelative: (intent) => {
       const direction = directionForIntent(intent, get().movementBasis);
       if (engine.move(direction.dx, direction.dz)) {
@@ -116,6 +119,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         snapshot: engine.snapshot(),
         resumeCountdown: null,
         tutorialStep: null,
+        sessionId: get().sessionId + 1,
       });
     },
     startTutorial: () => {
@@ -125,6 +129,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         snapshot: engine.snapshot(),
         resumeCountdown: null,
         tutorialStep: 'camera',
+        sessionId: get().sessionId + 1,
       });
     },
     finishTutorial: () => {
@@ -134,6 +139,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         snapshot: engine.snapshot(),
         resumeCountdown: null,
         tutorialStep: null,
+        sessionId: get().sessionId + 1,
       });
     },
     restart: () => {
@@ -145,6 +151,16 @@ export const useGameStore = create<GameStore>((set, get) => {
         snapshot: engine.snapshot(),
         resumeCountdown: null,
         tutorialStep: tutorialStep === null ? null : 'camera',
+        sessionId: get().sessionId + 1,
+      });
+    },
+    returnToMenu: () => {
+      const mode = engine.snapshot().mode;
+      engine = new GameEngine((Date.now() ^ 0x9e3779b9) >>> 0, mode);
+      set({
+        snapshot: engine.snapshot(),
+        resumeCountdown: null,
+        tutorialStep: null,
       });
     },
   };

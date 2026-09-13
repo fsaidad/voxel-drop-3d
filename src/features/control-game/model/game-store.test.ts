@@ -51,4 +51,12 @@ describe('game session controls', () => {
     useGameStore.getState().drop();
     expect(useGameStore.getState().tutorialStep).toBe('complete');
   });
+
+  it('returns to a waiting menu without starting another session', () => {
+    const sessionId = useGameStore.getState().sessionId;
+    useGameStore.getState().returnToMenu();
+
+    expect(useGameStore.getState().snapshot.status).toBe('ready');
+    expect(useGameStore.getState().sessionId).toBe(sessionId);
+  });
 });

@@ -64,6 +64,11 @@ skins without affecting gameplay. Progress, unlocked rewards, and the selected
 skin are stored locally in a versioned, validated browser profile that can later
 be synchronized with an account backend.
 
+The profile presents the best score, played sessions, placed pieces, cleared
+layers, achievements, and the cosmetic collection. Opening it during a session
+pauses the simulation. The game-over summary highlights a new record and rewards
+earned during that run.
+
 ## Production baseline
 
 The repository contains only application code, tests, documentation, and CI configuration. Local environments, build output, hosting metadata, and generated files are ignored. Dependencies are pinned and every push is checked with linting, type checking, tests, and a production build.
