@@ -3,6 +3,10 @@
 import { lazy, Suspense } from 'react';
 import { useGameController, useGameStore } from '@/src/features/control-game';
 import {
+  AchievementToast,
+  useProgressionController,
+} from '@/src/features/player-progression';
+import {
   DirectionCompass,
   GameHeader,
   LayerPressureAlert,
@@ -33,6 +37,7 @@ export function GamePreview() {
   const finishTutorial = useGameStore((state) => state.finishTutorial);
   const restart = useGameStore((state) => state.restart);
   const togglePause = useGameStore((state) => state.togglePause);
+  useProgressionController(snapshot, tutorialStep !== null);
 
   return (
     <main className="h-dvh overflow-hidden p-0 sm:p-4 lg:p-6">
@@ -53,6 +58,7 @@ export function GamePreview() {
                 feedback={snapshot.feedback}
               />
             )}
+            <AchievementToast />
             <DirectionCompass />
             <LayerPressureAlert pressure={snapshot.layerPressure} />
             <MobileHud snapshot={snapshot} />

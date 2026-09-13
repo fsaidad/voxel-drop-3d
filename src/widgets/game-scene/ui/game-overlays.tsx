@@ -15,6 +15,7 @@ import type {
   GameSnapshot,
 } from '@/src/entities/game';
 import type { TutorialStep } from '@/src/features/control-game';
+import { CosmeticPicker } from '@/src/features/player-progression';
 import { Button } from '@/src/shared/ui';
 
 export function GameFeedback({ feedback }: { readonly feedback: Feedback }) {
@@ -93,6 +94,7 @@ export function ReadyOverlay({
         >
           <GraduationCap /> Пройти короткое обучение
         </Button>
+        <CosmeticPicker />
         <p className="theme-subtle mt-4 text-center text-[11px]">
           WASD — движение · мышь — камера · Space — бросить
         </p>
@@ -188,8 +190,11 @@ export function StatusOverlay({
           </span>
           <div className="min-w-0 flex-1">
             <strong className="block text-sm">Режим осмотра</strong>
-            <span className="theme-muted block truncate text-xs">
+            <span className="theme-muted block text-xs">
               Время остановлено — куб можно вращать и приближать
+            </span>
+            <span className="theme-subtle mt-1 hidden font-mono text-[9px] sm:block">
+              Q/E → Y · ↑/↓ → X · ←/→ → Z
             </span>
           </div>
           <Button
@@ -255,14 +260,14 @@ const TUTORIAL_CONTENT: Record<
   yaw: {
     title: 'Поверните вокруг Y',
     description:
-      'Q и E поворачивают фигуру влево и вправо вокруг вертикальной оси.',
-    hint: 'Нажмите Q или E',
+      'Q/E или экранные Y−/Y+ поворачивают фигуру вокруг вертикальной оси.',
+    hint: 'Используйте Q/E или Y−/Y+',
   },
   tilt: {
     title: 'Наклоните фигуру',
     description:
-      'Стрелки вверх и вниз вращают вокруг X, влево и вправо — вокруг Z.',
-    hint: 'Нажмите любую стрелку',
+      'Стрелки вращают вокруг X/Z. На экране используйте кнопки этих осей.',
+    hint: 'Используйте стрелку или X/Z',
   },
   drop: {
     title: 'Установите фигуру',
@@ -288,7 +293,7 @@ export function TutorialOverlay({
   const content = TUTORIAL_CONTENT[step];
   const current = ['camera', 'move', 'yaw', 'tilt', 'drop'].indexOf(step);
   return (
-    <aside className="pointer-events-none absolute inset-x-3 bottom-28 z-30 sm:inset-x-auto sm:bottom-5 sm:left-5 sm:w-80">
+    <aside className="pointer-events-none absolute inset-x-3 bottom-40 z-30 sm:inset-x-auto sm:bottom-5 sm:left-5 sm:w-80">
       <div className="game-dialog rounded-2xl border p-4 shadow-2xl backdrop-blur-xl">
         <div className="flex items-center justify-between gap-3">
           <span className="theme-cyan text-[9px] uppercase tracking-[.2em]">

@@ -55,7 +55,14 @@ compact completion warning.
 
 ## Appearance
 
-The interface and the WebGL scene automatically follow the device light or dark color scheme. Theme changes are applied live through `prefers-color-scheme`; no preference or tracking data is stored.
+The interface and the WebGL scene automatically follow the device light or dark color scheme. Theme changes are applied live through `prefers-color-scheme`; no theme preference or analytics data is stored.
+
+## Progression
+
+Achievements are evaluated outside the game engine and unlock cosmetic voxel
+skins without affecting gameplay. Progress, unlocked rewards, and the selected
+skin are stored locally in a versioned, validated browser profile that can later
+be synchronized with an account backend.
 
 ## Production baseline
 

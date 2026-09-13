@@ -4,20 +4,11 @@ import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { Edges, OrbitControls } from '@react-three/drei';
 import { Canvas, useThree } from '@react-three/fiber';
 import { Color, InstancedMesh, Object3D } from 'three';
+import { getVoxelSkin, type VoxelSkin } from '@/src/entities/cosmetic';
 import { BOARD_SIZE, type RenderCell } from '@/src/entities/game';
 import { useGameStore } from '@/src/features/control-game';
+import { useProgressionStore } from '@/src/features/player-progression';
 import { type ColorScheme, useColorScheme } from '@/src/shared/lib';
-
-const COLORS = [
-  '#000000',
-  '#39ddff',
-  '#ffe16b',
-  '#c88cff',
-  '#55efbd',
-  '#ff6a9d',
-  '#749cff',
-  '#ffad65',
-];
 
 const SCENE_THEMES = {
   dark: {
@@ -48,7 +39,13 @@ function toScene(value: number): number {
   return value - (BOARD_SIZE - 1) / 2;
 }
 
-function VoxelInstances({ cells }: { readonly cells: readonly RenderCell[] }) {
+function VoxelInstances({
+  cells,
+  skin,
+}: {
+  readonly cells: readonly RenderCell[];
+  readonly skin: VoxelSkin;
+}) {
   const mesh = useRef<InstancedMesh>(null);
   useLayoutEffect(() => {
     const instance = mesh.current;
@@ -58,11 +55,14 @@ function VoxelInstances({ cells }: { readonly cells: readonly RenderCell[] }) {
       helper.position.set(toScene(cell.x), toScene(cell.y), toScene(cell.z));
       helper.updateMatrix();
       instance.setMatrixAt(index, helper.matrix);
-      instance.setColorAt(index, new Color(COLORS[cell.color] ?? COLORS[1]));
+      instance.setColorAt(
+        index,
+        new Color(skin.colors[cell.color] ?? skin.colors[1]),
+      );
     });
     instance.instanceMatrix.needsUpdate = true;
     if (instance.instanceColor) instance.instanceColor.needsUpdate = true;
-  }, [cells]);
+  }, [cells, skin]);
 
   return (
     <instancedMesh
@@ -72,8 +72,8 @@ function VoxelInstances({ cells }: { readonly cells: readonly RenderCell[] }) {
     >
       <boxGeometry args={[0.82, 0.82, 0.82]} />
       <meshStandardMaterial
-        roughness={0.26}
-        metalness={0.16}
+        roughness={skin.roughness}
+        metalness={skin.metalness}
         emissive="#05070b"
         emissiveIntensity={0.2}
       />
@@ -85,13 +85,15 @@ function ActiveVoxels({
   cells,
   edgeColor,
   grounded,
+  skin,
 }: {
   readonly cells: readonly RenderCell[];
   readonly edgeColor: string;
   readonly grounded: boolean;
+  readonly skin: VoxelSkin;
 }) {
   return cells.map((cell, index) => {
-    const color = COLORS[cell.color] ?? COLORS[1]!;
+    const color = skin.colors[cell.color] ?? skin.colors[1]!;
     return (
       <mesh
         key={`${cell.x}-${cell.y}-${cell.z}-${index}`}
@@ -102,9 +104,9 @@ function ActiveVoxels({
           color={color}
           emissive={color}
           emissiveIntensity={grounded ? 0.42 : 0.24}
-          roughness={0.18}
-          metalness={0.12}
-          clearcoat={0.8}
+          roughness={skin.roughness}
+          metalness={skin.metalness}
+          clearcoat={skin.clearcoat}
           clearcoatRoughness={0.16}
         />
         <Edges color={grounded ? '#ffd166' : edgeColor} threshold={12} />
@@ -115,6 +117,9 @@ function ActiveVoxels({
 
 function GameCube({ colorScheme }: { readonly colorScheme: ColorScheme }) {
   const snapshot = useGameStore((state) => state.snapshot);
+  const tutorialStep = useGameStore((state) => state.tutorialStep);
+  const selectedSkin = useProgressionStore((state) => state.selectedSkin);
+  const skin = getVoxelSkin(selectedSkin);
   const sceneTheme = SCENE_THEMES[colorScheme];
   const boardCells = useMemo(() => {
     const cells: RenderCell[] = [];
@@ -183,7 +188,7 @@ function GameCube({ colorScheme }: { readonly colorScheme: ColorScheme }) {
         args={[BOARD_SIZE, BOARD_SIZE, sceneTheme.grid, sceneTheme.gridSubtle]}
         position={[0, -BOARD_SIZE / 2, 0]}
       />
-      <VoxelInstances cells={boardCells} />
+      <VoxelInstances cells={boardCells} skin={skin} />
       {snapshot.layerPressure && snapshot.layerPressure.ratio >= 0.72 && (
         <mesh
           position={[0, toScene(snapshot.layerPressure.layer) - 0.44, 0]}
@@ -201,13 +206,15 @@ function GameCube({ colorScheme }: { readonly colorScheme: ColorScheme }) {
       )}
       <ActiveVoxels
         cells={snapshot.active}
-        edgeColor={sceneTheme.voxelEdge}
+        edgeColor={skin.edge || sceneTheme.voxelEdge}
         grounded={snapshot.grounded}
+        skin={skin}
       />
+      <TutorialAxisGuide center={activeCenter} step={tutorialStep} />
       <pointLight
         position={activeCenter}
         intensity={8}
-        color={COLORS[snapshot.active[0]?.color ?? 1] ?? '#39ddff'}
+        color={skin.colors[snapshot.active[0]?.color ?? 1] ?? '#39ddff'}
         distance={4.5}
         decay={2}
       />
@@ -218,10 +225,42 @@ function GameCube({ colorScheme }: { readonly colorScheme: ColorScheme }) {
         >
           <boxGeometry args={[0.86, 0.86, 0.86]} />
           <meshBasicMaterial
-            color={COLORS[cell.color] ?? COLORS[1]!}
+            color={skin.colors[cell.color] ?? skin.colors[1]!}
             wireframe
             transparent
             opacity={0.34}
+          />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function TutorialAxisGuide({
+  center,
+  step,
+}: {
+  readonly center: readonly [number, number, number];
+  readonly step: ReturnType<typeof useGameStore.getState>['tutorialStep'];
+}) {
+  if (step !== 'yaw' && step !== 'tilt') return null;
+  const axes =
+    step === 'yaw'
+      ? ([{ color: '#65f2a5', rotation: [0, 0, 0] }] as const)
+      : ([
+          { color: '#ff6f7d', rotation: [0, 0, Math.PI / 2] },
+          { color: '#65a6ff', rotation: [Math.PI / 2, 0, 0] },
+        ] as const);
+  return (
+    <group position={center} renderOrder={5}>
+      {axes.map((axis) => (
+        <mesh key={axis.color} rotation={axis.rotation}>
+          <cylinderGeometry args={[0.035, 0.035, 3.2, 8]} />
+          <meshBasicMaterial
+            color={axis.color}
+            transparent
+            opacity={0.9}
+            depthTest={false}
           />
         </mesh>
       ))}

@@ -8,7 +8,6 @@ import {
   ChevronsDown,
   Pause,
   Play,
-  Rotate3D,
   RotateCcw,
 } from 'lucide-react';
 import {
@@ -264,30 +263,51 @@ export function MobileControls({ status }: { readonly status: GameStatus }) {
         </Button>
       </div>
       <div className="game-glass grid grid-cols-2 gap-1 rounded-2xl border p-1.5 shadow-2xl backdrop-blur-xl">
-        <Control
-          icon={<Rotate3D />}
-          label="Поворот X"
+        <AxisControl
+          axis="X"
+          direction={-1}
           disabled={actionDisabled}
-          onClick={() => rotate('x')}
+          onClick={() => rotate('x', -1)}
         />
-        <Control
-          icon={<Rotate3D />}
-          label="Поворот Y"
+        <AxisControl
+          axis="X"
+          direction={1}
           disabled={actionDisabled}
-          onClick={() => rotate('y')}
+          onClick={() => rotate('x', 1)}
         />
-        <Control
-          icon={<Rotate3D />}
-          label="Поворот Z"
+        <AxisControl
+          axis="Y"
+          direction={-1}
           disabled={actionDisabled}
-          onClick={() => rotate('z')}
+          onClick={() => rotate('y', -1)}
         />
-        <Control
-          icon={<Pause />}
-          label="Пауза"
+        <AxisControl
+          axis="Y"
+          direction={1}
+          disabled={actionDisabled}
+          onClick={() => rotate('y', 1)}
+        />
+        <AxisControl
+          axis="Z"
+          direction={-1}
+          disabled={actionDisabled}
+          onClick={() => rotate('z', -1)}
+        />
+        <AxisControl
+          axis="Z"
+          direction={1}
+          disabled={actionDisabled}
+          onClick={() => rotate('z', 1)}
+        />
+        <Button
+          variant="outline"
+          className="col-span-2 h-8 text-[10px]"
+          aria-label="Пауза"
           disabled={pauseDisabled}
           onClick={togglePause}
-        />
+        >
+          <Pause /> Пауза
+        </Button>
       </div>
     </div>
   );
@@ -359,6 +379,33 @@ function Control({
       onClick={onClick}
     >
       {icon}
+    </Button>
+  );
+}
+
+function AxisControl({
+  axis,
+  direction,
+  disabled,
+  onClick,
+}: {
+  axis: 'X' | 'Y' | 'Z';
+  direction: 1 | -1;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  const sign = direction > 0 ? '+' : '−';
+  return (
+    <Button
+      variant="outline"
+      size="icon-xs"
+      className="h-7 w-full font-mono text-[10px]"
+      aria-label={`Поворот ${axis} ${direction > 0 ? 'вперёд' : 'назад'}`}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      {axis}
+      {sign}
     </Button>
   );
 }
