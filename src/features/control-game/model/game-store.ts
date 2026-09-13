@@ -27,6 +27,7 @@ interface GameStore {
   readonly rotate: (axis: Axis, direction?: 1 | -1) => void;
   readonly drop: () => void;
   readonly softDrop: () => void;
+  readonly hold: () => void;
   readonly tick: () => void;
   readonly togglePause: () => void;
   readonly advanceResumeCountdown: () => void;
@@ -83,6 +84,12 @@ export const useGameStore = create<GameStore>((set, get) => {
     },
     softDrop: () => {
       if (engine.softDrop()) publish();
+    },
+    hold: () => {
+      if (engine.hold()) {
+        publish();
+        advanceTutorial('hold');
+      }
     },
     tick: () => {
       if (get().tutorialStep !== null) return;

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BOARD_SIZE } from './types';
 import { GAME_RULES, GameEngine } from './game-engine';
+import { PIECE_COLORS } from './pieces';
 
 describe('GameEngine', () => {
   it('creates deterministic piece queues for the same seed', () => {
@@ -64,6 +65,28 @@ describe('GameEngine', () => {
     expect(game.softDrop()).toBe(true);
     expect(game.snapshot().active[0]?.y).toBe((before ?? 0) - 1);
     expect(game.snapshot().score).toBe(1);
+  });
+
+  it('holds one piece per placement and swaps it back later', () => {
+    const game = new GameEngine(5);
+    game.start();
+    const initialColor = game.snapshot().active[0]!.color;
+    const nextKind = game.snapshot().next[0]!;
+
+    expect(game.hold()).toBe(true);
+    expect(game.snapshot().hold).toBe(
+      Object.entries(PIECE_COLORS).find(
+        ([, color]) => color === initialColor,
+      )![0],
+    );
+    expect(game.snapshot().active[0]!.color).toBe(PIECE_COLORS[nextKind]);
+    expect(game.snapshot().canHold).toBe(false);
+    expect(game.hold()).toBe(false);
+
+    game.hardDrop();
+    expect(game.snapshot().canHold).toBe(true);
+    expect(game.hold()).toBe(true);
+    expect(game.snapshot().active[0]!.color).toBe(initialColor);
   });
 
   it('keeps a grounded piece movable during the lock delay', () => {

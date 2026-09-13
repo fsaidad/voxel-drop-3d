@@ -24,6 +24,7 @@ The game engine is deterministic for a supplied seed and has no dependency on Re
 - `W A S D`: move across the X/Z plane
 - `Q E`: rotate around Y
 - arrow keys: rotate around X/Z
+- `C`: hold or swap the active piece once per placement
 - `Shift`: soft drop by one voxel
 - `Space`: hard drop
 - `P` or `Esc`: pause

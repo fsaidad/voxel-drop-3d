@@ -92,7 +92,7 @@ export function ReadyOverlay({
           <GraduationCap /> Пройти короткое обучение
         </Button>
         <p className="theme-subtle mt-4 text-center text-[11px]">
-          WASD — движение · мышь — камера · Space — бросить
+          WASD — движение · C — Hold · мышь — камера · Space — бросить
         </p>
       </dialog>
     </div>
@@ -277,6 +277,12 @@ const TUTORIAL_CONTENT: Record<
     description: 'WASD двигают фигуру относительно текущего ракурса камеры.',
     hint: 'Нажмите W, A, S или D',
   },
+  hold: {
+    title: 'Отложите фигуру',
+    description:
+      'C переносит текущую фигуру в Hold. Повторно менять её можно после установки.',
+    hint: 'Нажмите C или экранную кнопку Hold',
+  },
   yaw: {
     title: 'Поверните вокруг Y',
     description:
@@ -311,7 +317,9 @@ export function TutorialOverlay({
   readonly onFinish: () => void;
 }) {
   const content = TUTORIAL_CONTENT[step];
-  const current = ['camera', 'move', 'yaw', 'tilt', 'drop'].indexOf(step);
+  const current = ['camera', 'move', 'hold', 'yaw', 'tilt', 'drop'].indexOf(
+    step,
+  );
   return (
     <aside className="pointer-events-none absolute inset-x-3 bottom-40 z-30 sm:inset-x-auto sm:bottom-5 sm:left-5 sm:w-80">
       <div className="game-dialog rounded-md border p-4 shadow-lg">
@@ -320,7 +328,7 @@ export function TutorialOverlay({
             Обучение
           </span>
           <span className="theme-subtle font-mono text-[10px]">
-            {step === 'complete' ? 'Готово' : `${current + 1}/5`}
+            {step === 'complete' ? 'Готово' : `${current + 1}/6`}
           </span>
         </div>
         <h2 className="mt-2 text-base font-semibold">{content.title}</h2>

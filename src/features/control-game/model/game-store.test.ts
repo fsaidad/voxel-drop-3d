@@ -39,6 +39,8 @@ describe('game session controls', () => {
     useGameStore.getState().registerCameraInteraction();
     expect(useGameStore.getState().tutorialStep).toBe('move');
     useGameStore.getState().moveRelative('left');
+    expect(useGameStore.getState().tutorialStep).toBe('hold');
+    useGameStore.getState().hold();
     expect(useGameStore.getState().tutorialStep).toBe('yaw');
     useGameStore.getState().rotate('x');
     expect(useGameStore.getState().tutorialStep).toBe('yaw');

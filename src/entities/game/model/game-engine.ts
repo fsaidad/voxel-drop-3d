@@ -72,6 +72,8 @@ export class GameEngine {
   private readonly board = new Uint8Array(BOARD_SIZE ** 3);
   private readonly queue: PieceQueue;
   private active: ActivePiece | null = null;
+  private held: PieceKind | null = null;
+  private holdUsed = false;
   private status: GameSnapshot['status'] = 'ready';
   private score = 0;
   private layers = 0;
@@ -170,6 +172,17 @@ export class GameEngine {
     return false;
   }
 
+  hold(): boolean {
+    if (this.status !== 'running' || !this.active || this.holdUsed)
+      return false;
+    const current = this.active.kind;
+    const replacement = this.held;
+    this.held = current;
+    this.holdUsed = true;
+    this.spawn(replacement ?? undefined);
+    return true;
+  }
+
   step(): boolean {
     if (this.status !== 'running' || !this.active) return false;
     this.tickCount += 1;
@@ -223,6 +236,9 @@ export class GameEngine {
       active,
       ghost,
       next: this.queue.peek(this.mode === 'focus' ? 3 : 1),
+      hold: this.held,
+      canHold:
+        this.status === 'running' && this.active !== null && !this.holdUsed,
       score: this.score,
       layers: this.layers,
       pieces: this.pieces,
@@ -268,10 +284,9 @@ export class GameEngine {
         };
   }
 
-  private spawn(): void {
+  private spawn(kind = this.queue.take()): void {
     this.groundedTicks = 0;
     this.lockResets = 0;
-    const kind = this.queue.take();
     const candidate: ActivePiece = {
       kind,
       cells: PIECES[kind].map((cell) => ({ ...cell })),
@@ -310,6 +325,7 @@ export class GameEngine {
       points: dropPoints + clearPoints,
       clearedLayers: cleared,
     };
+    this.holdUsed = false;
     this.spawn();
   }
 

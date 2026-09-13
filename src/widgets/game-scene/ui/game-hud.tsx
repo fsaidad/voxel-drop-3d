@@ -13,12 +13,17 @@ import {
 } from 'lucide-react';
 import {
   BOARD_SIZE,
+  PIECE_COLORS,
+  PIECES,
   type GameStatus,
   type GameSnapshot,
   type LayerPressure,
+  type PieceKind,
 } from '@/src/entities/game';
+import { getVoxelSkin } from '@/src/entities/cosmetic';
 import { useGameStore } from '@/src/features/control-game';
 import { SoundToggle } from '@/src/features/game-audio';
+import { useProgressionStore } from '@/src/features/player-progression';
 import { Button } from '@/src/shared/ui';
 
 export function GameHeader({
@@ -140,6 +145,7 @@ export function SessionSidebar({
       <div className="theme-subtle mt-6 grid gap-2 text-xs">
         <Hint keys="W A S D" label="движение" />
         <Hint keys="Shift" label="на клетку ниже" />
+        <Hint keys="C" label="удержать" />
         <Hint keys="Space" label="бросить" />
       </div>
     </aside>
@@ -147,16 +153,37 @@ export function SessionSidebar({
 }
 
 export function NextSidebar({ snapshot }: { readonly snapshot: GameSnapshot }) {
+  const selectedSkin = useProgressionStore((state) => state.selectedSkin);
+  const skin = getVoxelSkin(selectedSkin);
   return (
     <aside className="game-sidebar hidden border-l p-6 lg:block">
-      <p className="theme-violet font-mono text-[10px]">02 / ОЧЕРЕДЬ</p>
-      <div className="mt-5 border-y">
+      <p className="theme-cyan font-mono text-[10px]">HOLD / C</p>
+      <div className="mt-3 grid h-20 place-items-center border-y">
+        {snapshot.hold ? (
+          <>
+            <PiecePreview
+              kind={snapshot.hold}
+              color={skin.colors[PIECE_COLORS[snapshot.hold]]!}
+            />
+            <span className="sr-only">Фигура {snapshot.hold}</span>
+          </>
+        ) : (
+          <span className="theme-subtle font-mono text-[10px]">ПУСТО</span>
+        )}
+      </div>
+      <p className="theme-violet mt-6 font-mono text-[10px]">02 / ОЧЕРЕДЬ</p>
+      <div className="mt-3 border-y">
         {snapshot.next.map((piece, index) => (
           <div
             key={`${piece}-${index}`}
-            className={`grid place-items-center border-b font-mono text-2xl last:border-b-0 ${index === 0 ? 'theme-violet h-24 bg-violet-300/[.045]' : 'theme-subtle h-16'}`}
+            className={`grid grid-cols-[2rem_1fr_auto] items-center border-b px-2 last:border-b-0 ${index === 0 ? 'theme-violet h-20 bg-violet-300/[.045]' : 'theme-subtle h-14'}`}
           >
-            {piece}
+            <span className="font-mono text-[9px]">0{index + 1}</span>
+            <PiecePreview
+              kind={piece}
+              color={skin.colors[PIECE_COLORS[piece]]!}
+            />
+            <strong className="font-mono text-sm">{piece}</strong>
           </div>
         ))}
       </div>
@@ -173,7 +200,8 @@ export function MobileHud({ snapshot }: { readonly snapshot: GameSnapshot }) {
     <div className="pointer-events-none absolute inset-x-4 top-4 flex items-start justify-between lg:hidden">
       <Metric label="Счёт" value={snapshot.score.toLocaleString('ru-RU')} />
       <div className="game-glass theme-violet border px-3 py-1.5 font-mono text-[9px]">
-        NEXT / <strong>{snapshot.next[0]}</strong>
+        H / <strong>{snapshot.hold ?? '—'}</strong> · N /{' '}
+        <strong>{snapshot.next[0]}</strong>
       </div>
       <Metric label="Слои" value={String(snapshot.layers).padStart(2, '0')} />
     </div>
@@ -227,11 +255,18 @@ export function LayerPressureAlert({
   );
 }
 
-export function MobileControls({ status }: { readonly status: GameStatus }) {
+export function MobileControls({
+  status,
+  canHold,
+}: {
+  readonly status: GameStatus;
+  readonly canHold: boolean;
+}) {
   const moveRelative = useGameStore((state) => state.moveRelative);
   const rotate = useGameStore((state) => state.rotate);
   const drop = useGameStore((state) => state.drop);
   const softDrop = useGameStore((state) => state.softDrop);
+  const hold = useGameStore((state) => state.hold);
   const togglePause = useGameStore((state) => state.togglePause);
   const actionDisabled = status !== 'running';
   const pauseDisabled = status !== 'running' && status !== 'paused';
@@ -280,6 +315,14 @@ export function MobileControls({ status }: { readonly status: GameStatus }) {
           disabled={actionDisabled}
         >
           <ChevronsDown /> Ниже
+        </Button>
+        <Button
+          variant="outline"
+          className="game-glass h-8 rounded-md px-3 font-mono text-[10px]"
+          onClick={hold}
+          disabled={actionDisabled || !canHold}
+        >
+          C · Hold
         </Button>
       </div>
       <div className="game-glass grid grid-cols-2 gap-1 rounded-md border p-1.5">
@@ -339,6 +382,7 @@ export function TabletHints() {
       <Hint keys="W A S D" label="движение" />
       <Hint keys="Q E / ↕" label="поворот" />
       <Hint keys="Shift" label="ниже" />
+      <Hint keys="C" label="hold" />
       <Hint keys="Space" label="бросить" />
     </div>
   );
@@ -448,4 +492,29 @@ function axisLabel(direction: { readonly dx: number; readonly dz: number }) {
   if (direction.dx < 0) return '−X';
   if (direction.dz > 0) return '+Z';
   return '−Z';
+}
+
+function PiecePreview({
+  kind,
+  color,
+}: {
+  readonly kind: PieceKind;
+  readonly color: string;
+}) {
+  const cells = PIECES[kind];
+  const projected = cells.map((cell) => ({
+    left: (cell.x + 2) * 10 + (cell.z + 1) * 5,
+    top: (1 - cell.y) * 10 + (cell.z + 1) * 4,
+  }));
+  return (
+    <span className="relative block h-10 w-16" aria-hidden="true">
+      {projected.map((cell, index) => (
+        <span
+          key={`${cell.left}-${cell.top}-${index}`}
+          className="absolute size-2.5 border border-white/45 shadow-[1px_1px_0_rgba(0,0,0,.15)]"
+          style={{ left: cell.left, top: cell.top, backgroundColor: color }}
+        />
+      ))}
+    </span>
+  );
 }

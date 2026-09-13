@@ -85,7 +85,10 @@ export function GamePreview() {
               height={snapshot.height}
             />
             <MobileHud snapshot={snapshot} />
-            <MobileControls status={snapshot.status} />
+            <MobileControls
+              status={snapshot.status}
+              canHold={snapshot.canHold}
+            />
             <TabletHints />
             {snapshot.status === 'ready' && (
               <ReadyOverlay onStart={start} onTutorial={startTutorial} />

@@ -42,6 +42,8 @@ export interface GameSnapshot {
   readonly active: readonly RenderCell[];
   readonly ghost: readonly RenderCell[];
   readonly next: readonly PieceKind[];
+  readonly hold: PieceKind | null;
+  readonly canHold: boolean;
   readonly score: number;
   readonly layers: number;
   readonly pieces: number;

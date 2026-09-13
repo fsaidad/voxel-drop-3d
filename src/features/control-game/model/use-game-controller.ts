@@ -28,6 +28,7 @@ export function useGameController(): void {
   const rotate = useGameStore((state) => state.rotate);
   const drop = useGameStore((state) => state.drop);
   const softDrop = useGameStore((state) => state.softDrop);
+  const hold = useGameStore((state) => state.hold);
   const togglePause = useGameStore((state) => state.togglePause);
   const resumeCountdown = useGameStore((state) => state.resumeCountdown);
   const advanceResumeCountdown = useGameStore(
@@ -109,6 +110,7 @@ export function useGameController(): void {
         ArrowRight: () => rotate('z', 1),
         KeyQ: () => rotate('y', -1),
         KeyE: () => rotate('y', 1),
+        KeyC: hold,
         Space: drop,
         ShiftLeft: softDrop,
         ShiftRight: softDrop,
@@ -143,7 +145,7 @@ export function useGameController(): void {
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('blur', clearHeldKeys);
     };
-  }, [drop, moveRelative, rotate, softDrop, status, togglePause]);
+  }, [drop, hold, moveRelative, rotate, softDrop, status, togglePause]);
 
   useEffect(() => {
     const onVisibility = () => {
