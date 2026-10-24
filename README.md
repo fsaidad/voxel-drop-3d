@@ -1,81 +1,94 @@
 # Voxel Drop 3D
 
-Production-oriented browser game about placing falling tetrominoes inside an 8×8×8 cube.
+An interactive 3D browser game that demonstrates how a complex real-time interface can stay readable, responsive, and testable across desktop and mobile.
 
-## Commands
+[Play the live demo](https://voxel-drop-3d.vercel.app/) · [View the source](https://github.com/fsaidad/voxel-drop-3d)
+
+## Why this project matters
+
+Voxel Drop is more than a visual experiment. It is a compact product case for the same engineering problems found in interactive product demos, 3D configurators, gamified onboarding, and data-rich dashboards:
+
+- a deterministic domain model separated from the UI;
+- a responsive WebGL scene with camera-relative controls;
+- clear feedback for dense spatial state;
+- desktop, keyboard, mouse, touch, and mobile interaction;
+- persistent user progress without requiring an account;
+- production checks for types, linting, tests, and builds.
+
+## Product experience
+
+The player places falling tetrominoes inside an 8×8×8 cube. The interface explains a three-dimensional board without covering the playfield:
+
+- **Focus and Hardcore modes** for different levels of assistance;
+- landing projection, next-piece preview, hold mechanic, lock delay, and layer guides;
+- camera-relative movement with an on-stage compass;
+- interactive tutorial without score or gravity pressure;
+- keyboard, mouse, touch, and automatic mobile controls;
+- light and dark themes that follow the device setting;
+- local achievements, cosmetic voxel skins, and player statistics;
+- synthesized audio cues with no downloaded audio assets.
+
+## Engineering highlights
+
+- **Deterministic game engine.** The domain accepts a seed and has no dependency on React, Three.js, Zustand, browser globals, or wall-clock time. This makes gameplay reproducible and unit-testable.
+- **Performance-conscious 3D rendering.** Board voxels use instancing. The scene is loaded as a separate client chunk and renders on demand instead of consuming GPU resources continuously while idle.
+- **Maintainable boundaries.** Feature-Sliced Design separates application composition, user actions, reusable widgets, and the framework-independent game domain.
+- **Defensive local persistence.** Progress is stored in a versioned and validated browser profile that can later be synchronized with an account backend.
+- **Production baseline.** Every push is checked with linting, type checking, tests, and a production build.
+
+## Stack
+
+- Next.js 16 and React 19
+- TypeScript
+- Three.js with React Three Fiber and Drei
+- Zustand
+- Tailwind CSS
+- Vitest
+- Oxlint and Oxfmt
+
+## Architecture
+
+```text
+app/                 Next.js routing and application entry points
+src/widgets/         reusable product-level compositions
+src/features/        player actions and interaction flows
+src/entities/game/   deterministic game rules and state transitions
+```
+
+Rendering consumes immutable game snapshots. The engine can therefore evolve independently from the WebGL scene, and the same state could be rendered by another client or synchronized through a backend.
+
+## Run locally
 
 ```bash
+npm install
 npm run dev
+```
+
+Quality checks:
+
+```bash
 npm run typecheck
 npm run lint
 npm test
 npm run build
-npm start
 ```
 
-## Architecture
-
-The project follows Feature-Sliced Design. The App Router files form the `app/pages` integration layer; reusable composition lives in `widgets`, user actions in `features`, and the framework-independent game domain in `entities/game`.
-
-The game engine is deterministic for a supplied seed and has no dependency on React, Three.js, Zustand, browser globals, or wall-clock time. Rendering consumes immutable snapshots and uses instancing for the board voxels.
+Node.js 22.13 or newer is required.
 
 ## Controls
 
-- `W A S D`: move across the X/Z plane
-- `Q E`: rotate around Y
-- arrow keys: rotate around X/Z
-- `C`: hold or swap the active piece once per placement
-- `Shift`: soft drop by one voxel
-- `Space`: hard drop
-- `P` or `Esc`: pause
-- mouse/touch drag: orbit camera
-- wheel/pinch: zoom
+- `W A S D` — move across the X/Z plane
+- `Q E` — rotate around Y
+- arrow keys — rotate around X/Z
+- `C` — hold or swap the active piece once per placement
+- `Shift` — soft drop by one voxel
+- `Space` — hard drop
+- `P` or `Esc` — pause
+- mouse or touch drag — orbit the camera
+- wheel or pinch — zoom
 
-Mobile controls are displayed automatically on narrow screens.
-Movement and soft drop use a consistent delayed auto-repeat, so held controls
-feel the same across operating systems. The on-stage compass shows how WASD map
-to the world axes after every camera turn.
+## Commercial relevance
 
-Pause freezes the simulation but keeps orbit and zoom available for inspecting
-the board. Resuming uses a short countdown. A separate interactive tutorial
-teaches camera-relative movement, all three rotation axes, and placement without
-gravity or score pressure.
+This project is evidence of practical work with React, Next.js, TypeScript, WebGL, complex state, responsive interaction, and performance-sensitive UI. The same approach is suitable for interactive landing pages, product visualizations, browser games, configurators, and gamified iGaming interfaces.
 
-## Game modes
-
-- **Focus**: slower gravity, three-piece preview, and a landing projection.
-- **Hardcore**: faster gravity, one-piece preview, and no landing assistance.
-
-Both modes keep a stable pace throughout the session; there is no level system.
-
-The simulation waits on the start screen, so the player can choose a camera angle and mode before gravity begins.
-Placement feedback, earned-point callouts, piece count, and stack height keep the state of the 3D board readable without covering the playfield.
-Grounded pieces remain movable for a short lock delay; a warm edge indicates
-the landing state. Dense layers receive a completion guide; a high stack marks
-the critical zone in both the WebGL volume and the HUD.
-
-Short synthesized cues distinguish the start, placement, layer clear, and game
-over states. They use the Web Audio API, require no downloaded audio assets, and
-can be disabled from the header; the preference is stored locally.
-
-## Appearance
-
-The interface and the WebGL scene automatically follow the device light or dark color scheme. Theme changes are applied live through `prefers-color-scheme`; no theme preference or analytics data is stored.
-
-## Progression
-
-Achievements are evaluated outside the game engine and unlock cosmetic voxel
-skins without affecting gameplay. Progress, unlocked rewards, and the selected
-skin are stored locally in a versioned, validated browser profile that can later
-be synchronized with an account backend.
-
-The profile presents the best score, played sessions, placed pieces, cleared
-layers, achievements, and the cosmetic collection. Opening it during a session
-pauses the simulation. The game-over summary highlights a new record and rewards
-earned during that run.
-
-## Production baseline
-
-The repository contains only application code, tests, documentation, and CI configuration. Local environments, build output, hosting metadata, and generated files are ignored. Dependencies are pinned and every push is checked with linting, type checking, tests, and a production build.
-
-The 3D scene is loaded as a separate client chunk and renders on demand, keeping the initial shell responsive and avoiding continuous GPU work while the board is idle. Board voxels remain instanced, while feedback animation runs in the lightweight interface layer.
+For collaboration, contact me through my [GitHub profile](https://github.com/fsaidad).
