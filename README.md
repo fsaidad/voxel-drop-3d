@@ -31,6 +31,8 @@ The player places falling tetrominoes inside an 8×8×8 cube. The interface expl
 
 ## Engineering highlights
 
+[Technical SEO case with reproducible before/after evidence](docs/SEO-CASE-EN.md) · [Русский разбор](docs/SEO-CASE-RU.md)
+
 - **Deterministic game engine.** The domain accepts a seed and has no dependency on React, Three.js, Zustand, browser globals, or wall-clock time. This makes gameplay reproducible and unit-testable.
 - **Performance-conscious 3D rendering.** Board voxels use instancing. The scene is loaded as a separate client chunk and renders on demand instead of consuming GPU resources continuously while idle.
 - **Maintainable boundaries.** Feature-Sliced Design separates application composition, user actions, reusable widgets, and the framework-independent game domain.

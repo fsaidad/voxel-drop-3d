@@ -63,6 +63,20 @@ def fetch(url):
         }
 
 
+def has_self_canonical(canonicals, base):
+    if len(canonicals) != 1:
+        return False
+    actual = urlsplit(canonicals[0])
+    expected = urlsplit(base)
+    return (
+        actual.scheme == expected.scheme
+        and actual.netloc.lower() == expected.netloc.lower()
+        and (actual.path or "/") == (expected.path or "/")
+        and not actual.query
+        and not actual.fragment
+    )
+
+
 def audit(base):
     parts = urlsplit(base)
     if parts.scheme not in ("http", "https") or not parts.netloc or parts.username or parts.password:
@@ -84,7 +98,7 @@ def audit(base):
         "title_in_server_html": bool(parser.title.strip()),
         "description_in_server_html": bool(parser.description.strip()),
         "html_language_declared": bool(parser.language),
-        "single_self_canonical": parser.canonicals == [base],
+        "single_self_canonical": has_self_canonical(parser.canonicals, base),
         "no_noindex_directive": "noindex" not in directives,
         "robots_returns_200_and_lists_sitemap": robots["status"] == 200 and urljoin(base, "sitemap.xml") in robots["body"],
         "sitemap_returns_200_and_lists_home": sitemap["status"] == 200 and base in locations,
