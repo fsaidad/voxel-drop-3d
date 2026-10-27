@@ -20,6 +20,7 @@ Voxel Drop is more than a visual experiment. It is a compact product case for th
 The player places falling tetrominoes inside an 8×8×8 cube. The interface explains a three-dimensional board without covering the playfield:
 
 - **Focus and Hardcore modes** for different levels of assistance;
+- **English and Russian UI**, including tutorials, achievements and recovery messages; the language choice is saved separately from game progress;
 - landing projection, next-piece preview, hold mechanic, lock delay, and layer guides;
 - camera-relative movement with an on-stage compass;
 - interactive tutorial without score or gravity pressure;

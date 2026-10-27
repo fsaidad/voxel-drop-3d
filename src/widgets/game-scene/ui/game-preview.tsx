@@ -1,5 +1,5 @@
 'use client';
-
+import { useI18n } from '@/src/shared/i18n';
 import { lazy, Suspense, useState } from 'react';
 import { useGameController, useGameStore } from '@/src/features/control-game';
 import { useGameAudio } from '@/src/features/game-audio';
@@ -25,11 +25,9 @@ import {
   StatusOverlay,
   TutorialOverlay,
 } from './game-overlays';
-
 const GameCanvas = lazy(() =>
   import('./game-canvas').then((module) => ({ default: module.GameCanvas })),
 );
-
 export function GamePreview() {
   useGameController();
   const snapshot = useGameStore((state) => state.snapshot);
@@ -47,12 +45,10 @@ export function GamePreview() {
   const [profileOpen, setProfileOpen] = useState(false);
   useProgressionController(snapshot, tutorialStep !== null, sessionId);
   useGameAudio(snapshot);
-
   const openProfile = () => {
     if (snapshot.status === 'running') pause();
     setProfileOpen(true);
   };
-
   return (
     <main className="h-dvh overflow-hidden p-0 sm:p-4 lg:p-6">
       <div className="game-shell mx-auto grid h-full max-w-[1600px] grid-rows-[auto_minmax(0,1fr)] overflow-hidden sm:rounded-lg sm:border">
@@ -112,11 +108,11 @@ export function GamePreview() {
     </main>
   );
 }
-
 function CanvasFallback() {
+  const { t } = useI18n();
   return (
     <output className="theme-muted grid h-full min-h-80 place-items-center text-sm">
-      Загружаем 3D-сцену…
+      {t('Загружаем 3D-сцену\u2026') + ' '}
     </output>
   );
 }

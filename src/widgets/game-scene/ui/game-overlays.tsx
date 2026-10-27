@@ -1,5 +1,5 @@
 'use client';
-
+import { useI18n } from '@/src/shared/i18n';
 import { useEffect, useRef } from 'react';
 import { Eye, GraduationCap, House, Play, RotateCcw } from 'lucide-react';
 import { getAchievement } from '@/src/entities/achievement';
@@ -11,8 +11,8 @@ import type {
 import type { TutorialStep } from '@/src/features/control-game';
 import type { SessionSummary } from '@/src/features/player-progression';
 import { Button } from '@/src/shared/ui';
-
 export function GameFeedback({ feedback }: { readonly feedback: Feedback }) {
+  const { t } = useI18n();
   const isClear = feedback.kind === 'clear';
   return (
     <>
@@ -31,13 +31,15 @@ export function GameFeedback({ feedback }: { readonly feedback: Feedback }) {
         aria-live="polite"
       >
         {isClear
-          ? `${feedback.clearedLayers > 1 ? `${feedback.clearedLayers} слоя` : 'Слой'} очищен · +${feedback.points}`
-          : `Фигура установлена${feedback.points > 0 ? ` · +${feedback.points}` : ''}`}
+          ? t('Очищено слоёв: {count} · +{points}', {
+              count: feedback.clearedLayers,
+              points: feedback.points,
+            })
+          : `${t('Фигура установлена')}${feedback.points > 0 ? ` · +${feedback.points}` : ''}`}
       </output>
     </>
   );
 }
-
 export function ReadyOverlay({
   onStart,
   onTutorial,
@@ -45,9 +47,9 @@ export function ReadyOverlay({
   readonly onStart: (mode: GameMode) => void;
   readonly onTutorial: () => void;
 }) {
+  const { t } = useI18n();
   const primaryAction = useRef<HTMLButtonElement>(null);
   useEffect(() => primaryAction.current?.focus(), []);
-
   return (
     <div className="game-overlay pointer-events-none absolute inset-0 z-40 grid place-items-center p-4 backdrop-blur-sm sm:p-6">
       <dialog
@@ -57,16 +59,19 @@ export function ReadyOverlay({
         aria-labelledby="ready-title"
       >
         <div>
-          <p className="theme-cyan font-mono text-[10px]">НОВАЯ ПАРТИЯ / 01</p>
+          <p className="theme-cyan font-mono text-[10px]">
+            {t('НОВАЯ ПАРТИЯ / 01')}
+          </p>
           <h2
             id="ready-title"
             className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl"
           >
-            Выберите свой темп
+            {t('Выберите свой темп') + ' '}
           </h2>
           <p className="theme-muted mt-2 max-w-md text-sm leading-6">
-            Сначала поверните куб и найдите удобный ракурс. Таймер начнётся
-            только после выбора режима.
+            {t(
+              'Сначала поверните куб и найдите удобный ракурс. Таймер начнётся только после выбора режима.',
+            ) + ' '}
           </p>
         </div>
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -74,13 +79,17 @@ export function ReadyOverlay({
             buttonRef={primaryAction}
             mode="focus"
             title="Focus"
-            description="Спокойнее падение, три следующие фигуры и проекция точки посадки."
+            description={t(
+              'Спокойнее падение, три следующие фигуры и проекция точки посадки.',
+            )}
             onStart={onStart}
           />
           <ModeButton
             mode="hardcore"
             title="Hardcore"
-            description="Быстрее гравитация, одна следующая фигура и никакой ghost-проекции."
+            description={t(
+              'Быстрее гравитация, одна следующая фигура и никакой ghost-проекции.',
+            )}
             onStart={onStart}
           />
         </div>
@@ -89,16 +98,18 @@ export function ReadyOverlay({
           className="game-stat mt-3 w-full"
           onClick={onTutorial}
         >
-          <GraduationCap /> Пройти короткое обучение
+          <GraduationCap />
+          {' ' + t('Пройти короткое обучение') + ' '}
         </Button>
         <p className="theme-subtle mt-4 text-center text-[11px]">
-          WASD — движение · C — Hold · мышь — камера · Space — бросить
+          {t(
+            'WASD \u2014 движение \u00B7 C \u2014 Hold \u00B7 мышь \u2014 камера \u00B7 Space \u2014 бросить',
+          ) + ' '}
         </p>
       </dialog>
     </div>
   );
 }
-
 function ModeButton({
   mode,
   title,
@@ -112,6 +123,7 @@ function ModeButton({
   onStart: (mode: GameMode) => void;
   buttonRef?: React.Ref<HTMLButtonElement>;
 }) {
+  const { t } = useI18n();
   const focus = mode === 'focus';
   return (
     <button
@@ -134,12 +146,13 @@ function ModeButton({
       <span
         className={`${focus ? 'theme-cyan' : 'theme-rose'} mt-3 block font-mono text-[9px]`}
       >
-        {focus ? 'ПРОЕКЦИЯ · ОЧЕРЕДЬ ×3' : 'БЕЗ ПРОЕКЦИИ · ОЧЕРЕДЬ ×1'}
+        {focus
+          ? t('ПРОЕКЦИЯ \u00B7 ОЧЕРЕДЬ ×3')
+          : t('БЕЗ ПРОЕКЦИИ \u00B7 ОЧЕРЕДЬ ×1')}
       </span>
     </button>
   );
 }
-
 export function StatusOverlay({
   snapshot,
   resumeCountdown,
@@ -155,6 +168,7 @@ export function StatusOverlay({
   readonly onReturnToMenu: () => void;
   readonly onTogglePause: () => void;
 }) {
+  const { t, locale } = useI18n();
   const primaryAction = useRef<HTMLButtonElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -164,7 +178,6 @@ export function StatusOverlay({
     primaryAction.current?.focus();
     return () => currentDialog.close();
   }, [snapshot.status]);
-
   if (snapshot.status === 'paused')
     return (
       <div className="pointer-events-none absolute inset-0 z-40 flex items-end justify-center p-4 sm:items-start sm:p-5">
@@ -172,22 +185,25 @@ export function StatusOverlay({
           <output
             className="game-dialog absolute left-1/2 top-1/2 grid size-24 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border font-mono text-5xl font-semibold shadow-2xl backdrop-blur-xl"
             aria-live="assertive"
-            aria-label={`Продолжение через ${resumeCountdown}`}
+            aria-label={t('Продолжение через {count}', {
+              count: resumeCountdown,
+            })}
           >
             {resumeCountdown}
           </output>
         )}
         <section
           className="game-dialog pointer-events-auto flex w-full max-w-lg items-center gap-3 rounded-md border p-3 pr-3 shadow-lg sm:p-4"
-          aria-label="Игра на паузе"
+          aria-label={t('Игра на паузе')}
         >
           <span className="theme-cyan shrink-0">
             <Eye />
           </span>
           <div className="min-w-0 flex-1">
-            <strong className="block text-sm">Режим осмотра</strong>
+            <strong className="block text-sm">{t('Режим осмотра')}</strong>
             <span className="theme-muted block text-xs">
-              Время остановлено — куб можно вращать и приближать
+              {t('Время остановлено \u2014 куб можно вращать и приближать') +
+                ' '}
             </span>
             <span className="theme-subtle mt-1 hidden font-mono text-[9px] sm:block">
               Q/E → Y · ↑/↓ → X · ←/→ → Z
@@ -195,19 +211,20 @@ export function StatusOverlay({
           </div>
           <Button
             aria-label={
-              resumeCountdown === null ? 'Продолжить игру' : 'Отменить отсчёт'
+              resumeCountdown === null
+                ? t('Продолжить игру')
+                : t('Отменить отсчёт')
             }
             onClick={onTogglePause}
           >
             <Play />
             <span className="hidden sm:inline">
-              {resumeCountdown === null ? 'Продолжить' : 'Отмена'}
+              {resumeCountdown === null ? t('Продолжить') : t('Отмена')}
             </span>
           </Button>
         </section>
       </div>
     );
-
   if (snapshot.status !== 'game-over') return null;
   return (
     <div className="game-overlay absolute inset-0 z-40 grid place-items-center p-6 backdrop-blur-md">
@@ -218,28 +235,29 @@ export function StatusOverlay({
         aria-labelledby="status-title"
       >
         <p className="theme-cyan text-xs uppercase tracking-[.22em]">
-          Куб заполнен
+          {t('Куб заполнен') + ' '}
         </p>
         <h2 id="status-title" className="mt-3 text-2xl font-semibold">
-          Партия завершена
+          {t('Партия завершена') + ' '}
         </h2>
         <p className="theme-muted mt-2 text-sm leading-6">
-          Счёт: {snapshot.score.toLocaleString('ru-RU')}
+          {t('Счёт:') + ' '}
+          {snapshot.score.toLocaleString(locale)}
         </p>
         {sessionSummary?.isNewBest && (
           <p className="mt-3 rounded-full bg-amber-300/12 px-3 py-1 text-xs font-medium text-amber-700 dark:text-amber-100">
-            Новый рекорд
+            {t('Новый рекорд') + ' '}
           </p>
         )}
         {sessionSummary && sessionSummary.unlockedAchievements.length > 0 && (
           <div className="game-stat mt-4 rounded-md border p-3 text-left">
             <p className="theme-violet text-[9px] uppercase tracking-[.16em]">
-              Получено за партию
+              {t('Получено за партию') + ' '}
             </p>
             <div className="mt-2 grid gap-1">
               {sessionSummary.unlockedAchievements.map((id) => (
                 <span key={id} className="text-xs">
-                  {getAchievement(id).title}
+                  {t(getAchievement(id).title)}
                 </span>
               ))}
             </div>
@@ -247,17 +265,18 @@ export function StatusOverlay({
         )}
         <div className="mt-6 grid grid-cols-2 gap-2">
           <Button ref={primaryAction} onClick={onRestart}>
-            <RotateCcw /> Ещё раз
+            <RotateCcw />
+            {' ' + t('Ещё раз') + ' '}
           </Button>
           <Button variant="outline" onClick={onReturnToMenu}>
-            <House /> В меню
+            <House />
+            {' ' + t('В меню') + ' '}
           </Button>
         </div>
       </dialog>
     </div>
   );
 }
-
 const TUTORIAL_CONTENT: Record<
   TutorialStep,
   {
@@ -308,7 +327,6 @@ const TUTORIAL_CONTENT: Record<
     hint: 'Начните настоящую игру',
   },
 };
-
 export function TutorialOverlay({
   step,
   onFinish,
@@ -316,6 +334,7 @@ export function TutorialOverlay({
   readonly step: TutorialStep;
   readonly onFinish: () => void;
 }) {
+  const { t } = useI18n();
   const content = TUTORIAL_CONTENT[step];
   const current = ['camera', 'move', 'hold', 'yaw', 'tilt', 'drop'].indexOf(
     step,
@@ -325,26 +344,27 @@ export function TutorialOverlay({
       <div className="game-dialog rounded-md border p-4 shadow-lg">
         <div className="flex items-center justify-between gap-3">
           <span className="theme-cyan text-[9px] uppercase tracking-[.2em]">
-            Обучение
+            {t('Обучение') + ' '}
           </span>
           <span className="theme-subtle font-mono text-[10px]">
-            {step === 'complete' ? 'Готово' : `${current + 1}/6`}
+            {step === 'complete' ? t('Готово') : `${current + 1}/6`}
           </span>
         </div>
-        <h2 className="mt-2 text-base font-semibold">{content.title}</h2>
+        <h2 className="mt-2 text-base font-semibold">{t(content.title)}</h2>
         <p className="theme-muted mt-1 text-xs leading-5">
-          {content.description}
+          {t(content.description)}
         </p>
         {step === 'complete' ? (
           <Button
             className="pointer-events-auto mt-3 w-full"
             onClick={onFinish}
           >
-            <Play /> Начать Focus
+            <Play />
+            {' ' + t('Начать Focus') + ' '}
           </Button>
         ) : (
           <p className="theme-cyan mt-3 text-[10px] font-medium uppercase tracking-[.12em]">
-            {content.hint}
+            {t(content.hint)}
           </p>
         )}
       </div>

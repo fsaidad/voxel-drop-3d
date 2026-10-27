@@ -1,8 +1,7 @@
 'use client';
-
+import { useI18n } from '@/src/shared/i18n';
 import { useEffect } from 'react';
 import { useGameStore } from './game-store';
-
 declare global {
   interface Document {
     readonly modelContext?: {
@@ -13,15 +12,20 @@ declare global {
           description: string;
           inputSchema: object;
           execute(input: unknown): unknown;
-          annotations: { readOnlyHint: boolean; untrustedContentHint: boolean };
+          annotations: {
+            readOnlyHint: boolean;
+            untrustedContentHint: boolean;
+          };
         },
-        options?: { signal?: AbortSignal },
+        options?: {
+          signal?: AbortSignal;
+        },
       ): void | Promise<void>;
     };
   }
 }
-
 export function useGameController(): void {
+  const { t } = useI18n();
   const status = useGameStore((state) => state.snapshot.status);
   const tick = useGameStore((state) => state.tick);
   const moveRelative = useGameStore((state) => state.moveRelative);
@@ -36,7 +40,6 @@ export function useGameController(): void {
   );
   const pause = useGameStore((state) => state.pause);
   const restart = useGameStore((state) => state.restart);
-
   useEffect(() => {
     let frame = 0;
     let previous = performance.now();
@@ -53,13 +56,11 @@ export function useGameController(): void {
     frame = window.requestAnimationFrame(runFrame);
     return () => window.cancelAnimationFrame(frame);
   }, [tick]);
-
   useEffect(() => {
     if (resumeCountdown === null) return;
     const timer = window.setTimeout(advanceResumeCountdown, 1000);
     return () => window.clearTimeout(timer);
   }, [advanceResumeCountdown, resumeCountdown]);
-
   useEffect(() => {
     const heldKeys = new Map<string, number>();
     const clearHeldKey = (code: string) => {
@@ -84,7 +85,6 @@ export function useGameController(): void {
       };
       heldKeys.set(code, window.setTimeout(repeat, delay));
     };
-
     const onKeyDown = (event: KeyboardEvent) => {
       const target = event.target;
       const isInteractive =
@@ -146,7 +146,6 @@ export function useGameController(): void {
       window.removeEventListener('blur', clearHeldKeys);
     };
   }, [drop, hold, moveRelative, rotate, softDrop, status, togglePause]);
-
   useEffect(() => {
     const onVisibility = () => {
       if (document.hidden) pause();
@@ -154,7 +153,6 @@ export function useGameController(): void {
     document.addEventListener('visibilitychange', onVisibility);
     return () => document.removeEventListener('visibilitychange', onVisibility);
   }, [pause]);
-
   useEffect(() => {
     const context = document.modelContext;
     if (!context?.registerTool) return;
@@ -163,9 +161,12 @@ export function useGameController(): void {
       context.registerTool(
         {
           name: 'start_new_game',
-          title: 'Начать новую игру',
-          description:
+          title: t(
+            'Начать новую игру',
+          ),
+          description: t(
             'Сбрасывает текущую партию Voxel Drop и сразу начинает новую.',
+          ),
           inputSchema: {
             type: 'object',
             properties: {},
@@ -181,5 +182,5 @@ export function useGameController(): void {
       ),
     ).catch(() => undefined);
     return () => lifecycle.abort();
-  }, [restart]);
+  }, [restart, t]);
 }

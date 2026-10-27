@@ -1,5 +1,5 @@
 'use client';
-
+import { useI18n } from '@/src/shared/i18n';
 import {
   ArrowDown,
   ArrowLeft,
@@ -25,7 +25,6 @@ import { useGameStore } from '@/src/features/control-game';
 import { SoundToggle } from '@/src/features/game-audio';
 import { useProgressionStore } from '@/src/features/player-progression';
 import { Button } from '@/src/shared/ui';
-
 export function GameHeader({
   snapshot,
   onOpenProfile,
@@ -33,6 +32,7 @@ export function GameHeader({
   readonly snapshot: GameSnapshot;
   readonly onOpenProfile: () => void;
 }) {
+  const { t, locale, language, setLanguage } = useI18n();
   const togglePause = useGameStore((state) => state.togglePause);
   const restart = useGameStore((state) => state.restart);
   const canPause =
@@ -50,23 +50,36 @@ export function GameHeader({
             / {snapshot.status === 'ready' ? 'standby' : snapshot.mode}
           </span>
         </div>
-        <p className="theme-muted text-xs">Тетрис в объёме 8 × 8 × 8</p>
+        <p className="theme-muted hidden text-xs min-[400px]:block">
+          {t('Тетрис в объёме 8 × 8 × 8')}
+        </p>
       </div>
       <div className="flex items-center gap-2">
         <div className="mr-1 hidden text-right sm:block lg:hidden">
           <span className="theme-subtle block text-[9px] uppercase tracking-[.16em]">
-            Счёт
+            {t('Счёт') + ' '}
           </span>
           <strong className="font-mono text-sm tabular-nums">
-            {snapshot.score.toLocaleString('ru-RU')}
+            {snapshot.score.toLocaleString(locale)}
           </strong>
         </div>
+        <Button
+          variant="outline"
+          size="icon"
+          className="game-stat font-mono text-[10px]"
+          aria-label={
+            language === 'en' ? 'Switch to Russian' : 'Switch to English'
+          }
+          onClick={() => setLanguage(language === 'en' ? 'ru' : 'en')}
+        >
+          {language === 'en' ? 'RU' : 'EN'}
+        </Button>
         <SoundToggle />
         <Button
           variant="outline"
           size="icon"
           className="game-stat"
-          aria-label="Открыть профиль"
+          aria-label={t('Открыть профиль')}
           onClick={onOpenProfile}
           disabled={snapshot.status === 'game-over'}
         >
@@ -76,7 +89,7 @@ export function GameHeader({
           variant="outline"
           size="icon"
           className="game-stat"
-          aria-label="Начать заново"
+          aria-label={t('Начать заново')}
           onClick={restart}
           disabled={snapshot.status === 'ready'}
         >
@@ -86,7 +99,9 @@ export function GameHeader({
           variant="outline"
           size="icon"
           className="game-stat"
-          aria-label={snapshot.status === 'paused' ? 'Продолжить' : 'Пауза'}
+          aria-label={
+            snapshot.status === 'paused' ? t('Продолжить') : t('Пауза')
+          }
           onClick={togglePause}
           disabled={!canPause}
         >
@@ -96,32 +111,32 @@ export function GameHeader({
     </header>
   );
 }
-
 export function SessionSidebar({
   snapshot,
 }: {
   readonly snapshot: GameSnapshot;
 }) {
+  const { t, locale } = useI18n();
   return (
     <aside className="game-sidebar hidden border-r p-6 lg:block">
-      <p className="theme-cyan font-mono text-[10px]">01 / СЕССИЯ</p>
+      <p className="theme-cyan font-mono text-[10px]">{t('01 / СЕССИЯ')}</p>
       <div className="mt-5 border-y py-4">
         <Metric
-          label="Счёт"
-          value={snapshot.score.toLocaleString('ru-RU')}
+          label={t('Счёт')}
+          value={snapshot.score.toLocaleString(locale)}
           large
         />
       </div>
       <div className="grid grid-cols-2 border-b">
         <div className="border-r py-3 pr-3">
           <Metric
-            label="Режим"
+            label={t('Режим')}
             value={snapshot.mode === 'focus' ? 'Focus' : 'Hard'}
           />
         </div>
         <div className="py-3 pl-3">
           <Metric
-            label="Слои"
+            label={t('Слои')}
             value={String(snapshot.layers).padStart(2, '0')}
           />
         </div>
@@ -129,30 +144,34 @@ export function SessionSidebar({
       <div className="grid grid-cols-2 border-b">
         <div className="border-r py-3 pr-3">
           <Metric
-            label="Фигуры"
+            label={t('Фигуры')}
             value={String(snapshot.pieces).padStart(2, '0')}
           />
         </div>
         <div className="py-3 pl-3">
-          <Metric label="Высота" value={`${snapshot.height}/${BOARD_SIZE}`} />
+          <Metric
+            label={t('Высота')}
+            value={`${snapshot.height}/${BOARD_SIZE}`}
+          />
         </div>
       </div>
       <div className="mt-8 h-px bg-gradient-to-r from-cyan-300/20 to-transparent" />
       <p className="theme-muted mt-5 text-sm leading-6">
-        Движение следует за камерой. Поверните арену — направления перестроятся
-        автоматически.
+        {t(
+          'Движение следует за камерой. Поверните арену \u2014 направления перестроятся автоматически.',
+        ) + ' '}
       </p>
       <div className="theme-subtle mt-6 grid gap-2 text-xs">
-        <Hint keys="W A S D" label="движение" />
-        <Hint keys="Shift" label="на клетку ниже" />
-        <Hint keys="C" label="удержать" />
-        <Hint keys="Space" label="бросить" />
+        <Hint keys="W A S D" label={t('движение')} />
+        <Hint keys="Shift" label={t('на клетку ниже')} />
+        <Hint keys="C" label={t('удержать')} />
+        <Hint keys="Space" label={t('бросить')} />
       </div>
     </aside>
   );
 }
-
 export function NextSidebar({ snapshot }: { readonly snapshot: GameSnapshot }) {
+  const { t } = useI18n();
   const selectedSkin = useProgressionStore((state) => state.selectedSkin);
   const skin = getVoxelSkin(selectedSkin);
   return (
@@ -165,13 +184,20 @@ export function NextSidebar({ snapshot }: { readonly snapshot: GameSnapshot }) {
               kind={snapshot.hold}
               color={skin.colors[PIECE_COLORS[snapshot.hold]]!}
             />
-            <span className="sr-only">Фигура {snapshot.hold}</span>
+            <span className="sr-only">
+              {t('Фигура') + ' '}
+              {snapshot.hold}
+            </span>
           </>
         ) : (
-          <span className="theme-subtle font-mono text-[10px]">ПУСТО</span>
+          <span className="theme-subtle font-mono text-[10px]">
+            {t('ПУСТО')}
+          </span>
         )}
       </div>
-      <p className="theme-violet mt-6 font-mono text-[10px]">02 / ОЧЕРЕДЬ</p>
+      <p className="theme-violet mt-6 font-mono text-[10px]">
+        {t('02 / ОЧЕРЕДЬ')}
+      </p>
       <div className="mt-3 border-y">
         {snapshot.next.map((piece, index) => (
           <div
@@ -189,35 +215,39 @@ export function NextSidebar({ snapshot }: { readonly snapshot: GameSnapshot }) {
       </div>
       <div className="mt-8 h-px bg-gradient-to-r from-violet-300/20 to-transparent" />
       <p className="theme-muted mt-5 text-sm leading-6">
-        Тяните арену мышью или пальцем. Колесо и pinch меняют масштаб.
+        {t('Тяните арену мышью или пальцем. Колесо и pinch меняют масштаб.') +
+          ' '}
       </p>
     </aside>
   );
 }
-
 export function MobileHud({ snapshot }: { readonly snapshot: GameSnapshot }) {
+  const { t, locale } = useI18n();
   return (
     <div className="pointer-events-none absolute inset-x-4 top-4 flex items-start justify-between lg:hidden">
-      <Metric label="Счёт" value={snapshot.score.toLocaleString('ru-RU')} />
+      <Metric label={t('Счёт')} value={snapshot.score.toLocaleString(locale)} />
       <div className="game-glass theme-violet border px-3 py-1.5 font-mono text-[9px]">
         H / <strong>{snapshot.hold ?? '—'}</strong> · N /{' '}
         <strong>{snapshot.next[0]}</strong>
       </div>
-      <Metric label="Слои" value={String(snapshot.layers).padStart(2, '0')} />
+      <Metric
+        label={t('Слои')}
+        value={String(snapshot.layers).padStart(2, '0')}
+      />
     </div>
   );
 }
-
 export function DirectionCompass() {
+  const { t } = useI18n();
   const basis = useGameStore((state) => state.movementBasis);
   const backward = { dx: -basis.forward.dx, dz: -basis.forward.dz };
   const left = { dx: -basis.right.dx, dz: -basis.right.dz };
   return (
     <div
       className="game-glass pointer-events-none absolute left-3 top-24 z-10 w-28 rounded-md border p-2.5 text-center sm:left-4"
-      aria-label="Направления движения относительно камеры"
+      aria-label={t('Направления движения относительно камеры')}
     >
-      <p className="theme-subtle font-mono text-[8px]">КАМЕРА / ХОД</p>
+      <p className="theme-subtle font-mono text-[8px]">{t('КАМЕРА / ХОД')}</p>
       <div className="mt-2 grid grid-cols-3 items-center gap-1 font-mono text-[9px]">
         <span />
         <CompassKey keyName="W" direction={axisLabel(basis.forward)} />
@@ -232,7 +262,6 @@ export function DirectionCompass() {
     </div>
   );
 }
-
 export function LayerPressureAlert({
   pressure,
   height,
@@ -240,21 +269,21 @@ export function LayerPressureAlert({
   readonly pressure: LayerPressure | null;
   readonly height: number;
 }) {
+  const { t } = useI18n();
   const tallStack = height >= BOARD_SIZE - 2;
   const denseLayer = pressure !== null && pressure.ratio >= 0.72;
   if (!tallStack && !denseLayer) return null;
   return (
     <output className="danger-signal game-glass pointer-events-none absolute right-3 top-24 z-10 rounded-md border border-rose-400/40 px-3 py-2 text-right text-[10px] text-rose-700 dark:text-rose-200 sm:right-4">
-      <span className="block font-mono">КРИТИЧЕСКАЯ ЗОНА</span>
+      <span className="block font-mono">{t('КРИТИЧЕСКАЯ ЗОНА')}</span>
       <strong className="mt-0.5 block font-mono">
         {denseLayer && pressure
-          ? `Слой ${pressure.layer + 1} · ${Math.round(pressure.ratio * 100)}%`
-          : `Высота ${height}/${BOARD_SIZE}`}
+          ? `${t('Слой')} ${pressure.layer + 1} · ${Math.round(pressure.ratio * 100)}%`
+          : `${t('Высота')} ${height}/${BOARD_SIZE}`}
       </strong>
     </output>
   );
 }
-
 export function MobileControls({
   status,
   canHold,
@@ -262,6 +291,7 @@ export function MobileControls({
   readonly status: GameStatus;
   readonly canHold: boolean;
 }) {
+  const { t } = useI18n();
   const moveRelative = useGameStore((state) => state.moveRelative);
   const rotate = useGameStore((state) => state.rotate);
   const drop = useGameStore((state) => state.drop);
@@ -276,26 +306,26 @@ export function MobileControls({
         <span />
         <Control
           icon={<ArrowUp />}
-          label="Вперёд"
+          label={t('Вперёд')}
           disabled={actionDisabled}
           onClick={() => moveRelative('forward')}
         />
         <span />
         <Control
           icon={<ArrowLeft />}
-          label="Влево"
+          label={t('Влево')}
           disabled={actionDisabled}
           onClick={() => moveRelative('left')}
         />
         <Control
           icon={<ArrowDown />}
-          label="Назад"
+          label={t('Назад')}
           disabled={actionDisabled}
           onClick={() => moveRelative('backward')}
         />
         <Control
           icon={<ArrowRight />}
-          label="Вправо"
+          label={t('Вправо')}
           disabled={actionDisabled}
           onClick={() => moveRelative('right')}
         />
@@ -306,7 +336,7 @@ export function MobileControls({
           onClick={drop}
           disabled={actionDisabled}
         >
-          Бросить
+          {t('Бросить') + ' '}
         </Button>
         <Button
           variant="outline"
@@ -314,7 +344,8 @@ export function MobileControls({
           onClick={softDrop}
           disabled={actionDisabled}
         >
-          <ChevronsDown /> Ниже
+          <ChevronsDown />
+          {' ' + t('Ниже') + ' '}
         </Button>
         <Button
           variant="outline"
@@ -365,29 +396,29 @@ export function MobileControls({
         <Button
           variant="outline"
           className="col-span-2 h-8 text-[10px]"
-          aria-label="Пауза"
+          aria-label={t('Пауза')}
           disabled={pauseDisabled}
           onClick={togglePause}
         >
-          <Pause /> Пауза
+          <Pause />
+          {' ' + t('Пауза') + ' '}
         </Button>
       </div>
     </div>
   );
 }
-
 export function TabletHints() {
+  const { t } = useI18n();
   return (
     <div className="theme-muted pointer-events-none absolute inset-x-5 bottom-5 hidden flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[11px] sm:flex lg:hidden">
-      <Hint keys="W A S D" label="движение" />
-      <Hint keys="Q E / ↕" label="поворот" />
-      <Hint keys="Shift" label="ниже" />
+      <Hint keys="W A S D" label={t('движение')} />
+      <Hint keys="Q E / ↕" label={t('поворот')} />
+      <Hint keys="Shift" label={t('ниже')} />
       <Hint keys="C" label="hold" />
-      <Hint keys="Space" label="бросить" />
+      <Hint keys="Space" label={t('бросить')} />
     </div>
   );
 }
-
 function Metric({
   label,
   value,
@@ -408,7 +439,6 @@ function Metric({
     </div>
   );
 }
-
 function Hint({ keys, label }: { label: string; keys: string }) {
   return (
     <span className="flex items-center gap-2">
@@ -419,7 +449,6 @@ function Hint({ keys, label }: { label: string; keys: string }) {
     </span>
   );
 }
-
 function Control({
   icon,
   label,
@@ -444,7 +473,6 @@ function Control({
     </Button>
   );
 }
-
 function AxisControl({
   axis,
   direction,
@@ -456,13 +484,14 @@ function AxisControl({
   disabled: boolean;
   onClick: () => void;
 }) {
+  const { t } = useI18n();
   const sign = direction > 0 ? '+' : '−';
   return (
     <Button
       variant="outline"
       size="icon-xs"
       className="h-7 w-full font-mono text-[10px]"
-      aria-label={`Поворот ${axis} ${direction > 0 ? 'вперёд' : 'назад'}`}
+      aria-label={`${t('Поворот')} ${axis} ${direction > 0 ? t('вперёд') : t('назад')}`}
       disabled={disabled}
       onClick={onClick}
     >
@@ -471,7 +500,6 @@ function AxisControl({
     </Button>
   );
 }
-
 function CompassKey({
   keyName,
   direction,
@@ -486,14 +514,12 @@ function CompassKey({
     </span>
   );
 }
-
 function axisLabel(direction: { readonly dx: number; readonly dz: number }) {
   if (direction.dx > 0) return '+X';
   if (direction.dx < 0) return '−X';
   if (direction.dz > 0) return '+Z';
   return '−Z';
 }
-
 function PiecePreview({
   kind,
   color,

@@ -1,5 +1,5 @@
 'use client';
-
+import { useI18n } from '@/src/shared/i18n';
 import { useEffect, useRef } from 'react';
 import { Check, LockKeyhole, Trophy, X } from 'lucide-react';
 import { ACHIEVEMENTS, getAchievement } from '@/src/entities/achievement';
@@ -10,19 +10,17 @@ import {
 } from '@/src/entities/cosmetic';
 import { Button } from '@/src/shared/ui';
 import { useProgressionStore } from '../model/progression-store';
-
 export function ProfileOverlay({ onClose }: { readonly onClose: () => void }) {
+  const { t, locale } = useI18n();
   const dialog = useRef<HTMLDialogElement>(null);
   const metrics = useProgressionStore((state) => state.metrics);
   const unlocked = useProgressionStore((state) => state.unlockedAchievements);
-
   useEffect(() => {
     const current = dialog.current;
     if (!current) return;
     current.showModal();
     return () => current.close();
   }, []);
-
   return (
     <dialog
       ref={dialog}
@@ -36,16 +34,16 @@ export function ProfileOverlay({ onClose }: { readonly onClose: () => void }) {
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--border)] bg-[var(--dialog)] px-5 py-4 backdrop-blur-xl sm:px-7">
         <div>
           <p className="theme-cyan text-[9px] uppercase tracking-[.22em]">
-            Локальный профиль
+            {t('Локальный профиль') + ' '}
           </p>
           <h2 id="profile-title" className="mt-1 text-xl font-semibold">
-            Прогресс игрока
+            {t('Прогресс игрока') + ' '}
           </h2>
         </div>
         <Button
           variant="outline"
           size="icon"
-          aria-label="Закрыть профиль"
+          aria-label={t('Закрыть профиль')}
           onClick={onClose}
         >
           <X />
@@ -55,20 +53,20 @@ export function ProfileOverlay({ onClose }: { readonly onClose: () => void }) {
       <div className="p-5 sm:p-7">
         <div className="grid grid-cols-2 border sm:grid-cols-4">
           <ProfileMetric
-            label="Рекорд"
-            value={metrics.bestScore.toLocaleString('ru-RU')}
+            label={t('Рекорд')}
+            value={metrics.bestScore.toLocaleString(locale)}
           />
           <ProfileMetric
-            label="Партий"
-            value={metrics.gamesPlayed.toLocaleString('ru-RU')}
+            label={t('Партий')}
+            value={metrics.gamesPlayed.toLocaleString(locale)}
           />
           <ProfileMetric
-            label="Фигур"
-            value={metrics.piecesPlaced.toLocaleString('ru-RU')}
+            label={t('Фигур')}
+            value={metrics.piecesPlaced.toLocaleString(locale)}
           />
           <ProfileMetric
-            label="Слоёв"
-            value={metrics.layersCleared.toLocaleString('ru-RU')}
+            label={t('Слоёв')}
+            value={metrics.layersCleared.toLocaleString(locale)}
           />
         </div>
 
@@ -76,10 +74,10 @@ export function ProfileOverlay({ onClose }: { readonly onClose: () => void }) {
           <div className="flex items-end justify-between gap-4">
             <div>
               <p className="theme-violet text-[9px] uppercase tracking-[.2em]">
-                Достижения
+                {t('Достижения') + ' '}
               </p>
               <h3 id="achievements-title" className="mt-1 font-semibold">
-                Коллекция наград
+                {t('Коллекция наград') + ' '}
               </h3>
             </div>
             <span className="theme-muted font-mono text-xs">
@@ -101,10 +99,10 @@ export function ProfileOverlay({ onClose }: { readonly onClose: () => void }) {
                   </span>
                   <span>
                     <strong className="block text-xs">
-                      {achievement.title}
+                      {t(achievement.title)}
                     </strong>
                     <span className="theme-muted mt-1 block text-[10px] leading-4">
-                      {achievement.description}
+                      {t(achievement.description)}
                     </span>
                   </span>
                 </article>
@@ -115,27 +113,26 @@ export function ProfileOverlay({ onClose }: { readonly onClose: () => void }) {
 
         <section className="mt-7" aria-labelledby="skins-title">
           <p className="theme-cyan text-[9px] uppercase tracking-[.2em]">
-            Косметика
+            {t('Косметика') + ' '}
           </p>
           <h3 id="skins-title" className="mt-1 font-semibold">
-            Скины фигур
+            {t('Скины фигур') + ' '}
           </h3>
           <SkinGrid />
         </section>
 
         <p className="theme-subtle mt-6 text-center text-[10px]">
-          Прогресс хранится только на этом устройстве
+          {t('Прогресс хранится только на этом устройстве') + ' '}
         </p>
       </div>
     </dialog>
   );
 }
-
 function SkinGrid() {
+  const { t } = useI18n();
   const unlocked = useProgressionStore((state) => state.unlockedAchievements);
   const selected = useProgressionStore((state) => state.selectedSkin);
   const selectSkin = useProgressionStore((state) => state.selectSkin);
-
   return (
     <div className="mt-3 grid gap-2 sm:grid-cols-3">
       {VOXEL_SKINS.map((skin) => {
@@ -159,8 +156,8 @@ function SkinGrid() {
             </span>
             <span className="theme-subtle mt-1 block text-[9px] leading-4">
               {available
-                ? skin.description
-                : getAchievement(skin.unlockAchievement!).description}
+                ? t(skin.description)
+                : t(getAchievement(skin.unlockAchievement!).description)}
             </span>
           </button>
         );
@@ -168,7 +165,6 @@ function SkinGrid() {
     </div>
   );
 }
-
 function ProfileMetric({
   label,
   value,
@@ -187,8 +183,8 @@ function ProfileMetric({
     </div>
   );
 }
-
 export function AchievementToast() {
+  const { t } = useI18n();
   const lastUnlock = useProgressionStore((state) => state.lastUnlock);
   const dismissUnlock = useProgressionStore((state) => state.dismissUnlock);
   useEffect(() => {
@@ -204,15 +200,16 @@ export function AchievementToast() {
   return (
     <output className="game-dialog pointer-events-none absolute right-3 top-24 z-30 w-64 rounded-md border border-amber-300/30 p-3 shadow-lg sm:right-4">
       <span className="flex items-center gap-2 text-xs font-semibold text-amber-700 dark:text-amber-100">
-        <Trophy className="size-4" /> {achievement.title}
+        <Trophy className="size-4" /> {t(achievement.title)}
       </span>
       <span className="theme-muted mt-1 block text-[10px]">
-        {reward ? `Открыт скин ${reward.name}` : achievement.description}
+        {reward
+          ? t('Открыт скин {name}', { name: reward.name })
+          : t(achievement.description)}
       </span>
     </output>
   );
 }
-
 function SkinSwatches({ skin }: { readonly skin: VoxelSkin }) {
   return (
     <span className="flex gap-1" aria-hidden="true">

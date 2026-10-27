@@ -1,5 +1,5 @@
 'use client';
-
+import { useI18n } from '@/src/shared/i18n';
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { Edges, OrbitControls } from '@react-three/drei';
 import { Canvas, useThree } from '@react-three/fiber';
@@ -9,7 +9,6 @@ import { BOARD_SIZE, type RenderCell } from '@/src/entities/game';
 import { useGameStore } from '@/src/features/control-game';
 import { useProgressionStore } from '@/src/features/player-progression';
 import { type ColorScheme, useColorScheme } from '@/src/shared/lib';
-
 const SCENE_THEMES = {
   dark: {
     background: '#050711',
@@ -34,11 +33,9 @@ const SCENE_THEMES = {
     cyanLight: 9,
   },
 } as const;
-
 function toScene(value: number): number {
   return value - (BOARD_SIZE - 1) / 2;
 }
-
 function VoxelInstances({
   cells,
   skin,
@@ -63,7 +60,6 @@ function VoxelInstances({
     instance.instanceMatrix.needsUpdate = true;
     if (instance.instanceColor) instance.instanceColor.needsUpdate = true;
   }, [cells, skin]);
-
   return (
     <instancedMesh
       ref={mesh}
@@ -80,7 +76,6 @@ function VoxelInstances({
     </instancedMesh>
   );
 }
-
 function ActiveVoxels({
   cells,
   edgeColor,
@@ -114,7 +109,6 @@ function ActiveVoxels({
     );
   });
 }
-
 function GameCube({ colorScheme }: { readonly colorScheme: ColorScheme }) {
   const snapshot = useGameStore((state) => state.snapshot);
   const tutorialStep = useGameStore((state) => state.tutorialStep);
@@ -133,7 +127,6 @@ function GameCube({ colorScheme }: { readonly colorScheme: ColorScheme }) {
         }
     return cells;
   }, [snapshot.board]);
-
   const activeCenter = useMemo<[number, number, number]>(() => {
     if (snapshot.active.length === 0) return [0, 0, 0];
     const total: [number, number, number] = [0, 0, 0];
@@ -148,7 +141,6 @@ function GameCube({ colorScheme }: { readonly colorScheme: ColorScheme }) {
       total[2] / snapshot.active.length,
     ];
   }, [snapshot.active]);
-
   return (
     <group>
       <mesh
@@ -251,7 +243,6 @@ function GameCube({ colorScheme }: { readonly colorScheme: ColorScheme }) {
     </group>
   );
 }
-
 function TutorialAxisGuide({
   center,
   step,
@@ -283,7 +274,6 @@ function TutorialAxisGuide({
     </group>
   );
 }
-
 function CameraControls() {
   const camera = useThree((state) => state.camera);
   const setCameraOrientation = useGameStore(
@@ -292,11 +282,9 @@ function CameraControls() {
   const registerCameraInteraction = useGameStore(
     (state) => state.registerCameraInteraction,
   );
-
   useEffect(() => {
     setCameraOrientation(camera.position.x, camera.position.z);
   }, [camera, setCameraOrientation]);
-
   return (
     <OrbitControls
       enablePan={false}
@@ -313,8 +301,8 @@ function CameraControls() {
     />
   );
 }
-
 export function GameCanvas() {
+  const { t } = useI18n();
   const colorScheme = useColorScheme();
   const sceneTheme = SCENE_THEMES[colorScheme];
   return (
@@ -324,7 +312,7 @@ export function GameCanvas() {
       frameloop="demand"
       fallback={
         <div className="theme-muted grid h-full place-items-center p-6 text-center text-sm">
-          Для игры нужна поддержка WebGL.
+          {t('Для игры нужна поддержка WebGL.') + ' '}
         </div>
       }
       gl={{ antialias: true, powerPreference: 'high-performance' }}
