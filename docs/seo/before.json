@@ -1,0 +1,40 @@
+{
+  "checked_at_utc": "2026-10-27T10:49:24.241336+00:00",
+  "site": "https://voxel-drop-3d.vercel.app/",
+  "scope": "One public page, robots.txt, sitemap.xml and one deliberately missing route. No ranking or performance claims.",
+  "home": {
+    "status": 200,
+    "url": "https://voxel-drop-3d.vercel.app/",
+    "content_type": "text/html; charset=utf-8",
+    "x_robots_tag": ""
+  },
+  "page": {
+    "title": "Voxel Drop — 3D puzzle",
+    "description": "A 3D falling-block puzzle inside an 8×8×8 cube. Play Focus or Hardcore, learn the controls and keep your progress on this device.",
+    "html_lang": "en",
+    "canonical": [],
+    "robots_meta": []
+  },
+  "robots": {
+    "status": 404,
+    "body": null
+  },
+  "sitemap": {
+    "status": 404,
+    "urls": []
+  },
+  "missing_page_status": 404,
+  "checks": {
+    "home_returns_200": true,
+    "title_in_server_html": true,
+    "description_in_server_html": true,
+    "html_language_declared": true,
+    "single_self_canonical": false,
+    "no_noindex_directive": true,
+    "robots_returns_200_and_lists_sitemap": false,
+    "sitemap_returns_200_and_lists_home": false,
+    "missing_page_returns_404": true
+  },
+  "passed": 6,
+  "total": 9
+}

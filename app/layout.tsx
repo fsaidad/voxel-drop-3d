@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://voxel-drop-3d.vercel.app'),
+  alternates: { canonical: '/' },
   title: 'Voxel Drop — 3D puzzle',
   description:
     'A 3D falling-block puzzle inside an 8×8×8 cube. Play Focus or Hardcore, learn the controls and keep your progress on this device.',
